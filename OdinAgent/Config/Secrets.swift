@@ -9,7 +9,7 @@
 enum Secrets {
 
     static let trelloAPIKey =
-        "YOUR_API_KEY"
+        "test"
 
     static let trelloToken =
         "YOUR_TOKEN"
