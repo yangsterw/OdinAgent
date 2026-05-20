@@ -21,15 +21,14 @@ struct OdinMainView: View {
         OdinBrainService()
 
     @State private var odinState = "Idle"
-
     @State private var latestResponse = ""
+    @State private var typedCommand = ""
 
     var body: some View {
 
         VStack(spacing: 20) {
 
             ZStack {
-
                 Image(
                     speechService.isSpeaking
                     ? mouthAnimationService.currentImageName
@@ -43,18 +42,14 @@ struct OdinMainView: View {
             .frame(width: 300, height: 300)
             .clipped()
 
-            Button("Woof Stop") {
+            Button("Stop Speaking") {
                 speechService.stop()
                 mouthAnimationService.stop()
                 idleAnimationService.start()
                 odinState = "Listening"
             }
             .disabled(!speechService.isSpeaking)
-            
-            Text("State: \(odinState)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
+
             ScrollView {
                 Text(latestResponse)
                     .font(.headline)
@@ -70,11 +65,35 @@ struct OdinMainView: View {
                 minHeight: 120,
                 maxHeight: 220
             )
-            .background(
-                Color.gray.opacity(0.12)
-            )
+            .background(Color.gray.opacity(0.12))
             .cornerRadius(12)
             .padding(.horizontal, 20)
+
+            HStack {
+                TextField(
+                    "Type a command for Odin...",
+                    text: $typedCommand
+                )
+                .textFieldStyle(.roundedBorder)
+                .onSubmit {
+                    submitTypedCommand()
+                }
+                .disabled(odinState == "Thinking")
+
+                Button("Send") {
+                    submitTypedCommand()
+                }
+                .disabled(
+                    typedCommand
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                        .isEmpty || odinState == "Thinking"
+                )
+            }
+            .padding(.horizontal, 20)
+
+            Text("State: \(odinState)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding()
         .onAppear {
@@ -85,7 +104,6 @@ struct OdinMainView: View {
             }
 
             speechService.onSpeechStarted = { spokenText in
-
                 Task { @MainActor in
                     odinState = "Speaking"
 
@@ -100,7 +118,6 @@ struct OdinMainView: View {
             }
 
             speechService.onSpeechFinished = {
-
                 Task { @MainActor in
                     odinState = "Listening"
 
@@ -112,24 +129,39 @@ struct OdinMainView: View {
             }
 
             whisperService.onTranscript = { transcript in
-
-                Task { @MainActor in
-                    odinState = "Thinking"
-                    latestResponse = "Thinking..."
-                }
-
-                Task {
-                    let response =
-                        await brainService.respond(to: transcript)
-
-                    await MainActor.run {
-                        latestResponse = response
-                        speechService.speak(response)
-                    }
-                }
+                handleCommand(transcript)
             }
 
             whisperService.startListening()
+        }
+    }
+
+    private func submitTypedCommand() {
+        let command = typedCommand
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !command.isEmpty else {
+            return
+        }
+
+        typedCommand = ""
+        handleCommand(command)
+    }
+
+    private func handleCommand(_ command: String) {
+        Task { @MainActor in
+            odinState = "Thinking"
+            latestResponse = "Thinking..."
+        }
+
+        Task {
+            let response =
+                await brainService.respond(to: command)
+
+            await MainActor.run {
+                latestResponse = response
+                speechService.speak(response)
+            }
         }
     }
 }
