@@ -13,7 +13,7 @@ struct OdinMainView: View {
 
     @StateObject private var whisperService =
         WhisperSoundListeningService()
-    
+
     private let phonemeService =
         DogPhonemeAnimatorService()
 
@@ -31,35 +31,43 @@ struct OdinMainView: View {
             .frame(width: 300, height: 300)
 
             Button("Make Odin Talk") {
-
-                speechService.onSpeechStarted = { spokenText in
-                    idleAnimationService.stop()
-
-                    let frames =
-                        phonemeService.frames(for: spokenText)
-
-                    mouthAnimationService.play(frames: frames)
-                }
-
-                speechService.onSpeechFinished = {
-                    mouthAnimationService.stop()
-                    idleAnimationService.start()
-                }
-
                 speechService.speak(
                     "Hello, I am Odin. I can hear you now."
                 )
             }
         }
         .padding()
-
+        
         .onAppear {
 
             idleAnimationService.start()
+
+            speechService.onSpeechStarted = { spokenText in
+
+                whisperService.stopListening()
+                idleAnimationService.stop()
+
+                let frames =
+                    phonemeService.frames(for: spokenText)
+
+                mouthAnimationService.play(frames: frames)
+            }
+
+            speechService.onSpeechFinished = {
+
+                mouthAnimationService.stop()
+                idleAnimationService.start()
+
+                whisperService.startListening()
+            }
+
             whisperService.onTranscript = { transcript in
-                let response = "Okey, \(transcript)"
+
+                let response = "Okay, \(transcript)"
+
                 speechService.speak(response)
             }
+
             whisperService.startListening()
         }
     }

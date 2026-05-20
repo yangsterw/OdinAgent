@@ -36,11 +36,16 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
 
             DispatchQueue.main.async {
 
-                do {
-                    self.whisper = try WhisperContext.create()
-                    print("Whisper loaded successfully")
-                } catch {
-                    print("Failed to load whisper:", error)
+                if self.whisper == nil {
+                    do {
+                        self.whisper = try WhisperContext.create()
+                        print("Whisper loaded successfully")
+                    } catch {
+                        print("Failed to load whisper:", error)
+                        return
+                    }
+                } else {
+                    print("Whisper already loaded")
                 }
 
                 self.startAudioEngine()
@@ -48,7 +53,7 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             }
         }
     }
-
+    
     func stopListening() {
         timer?.invalidate()
         timer = nil
@@ -90,10 +95,6 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         }
 
         let format = inputNode.inputFormat(forBus: 0)
-
-        print("Hardware mic format:", format)
-        print("Hardware channels:", format.channelCount)
-        print("Hardware sample rate:", format.sampleRate)
 
         audioEngine.connect(
             inputNode,
@@ -144,19 +145,13 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             maxLevel = max(maxLevel, abs(value))
         }
 
-        print("Buffer frames:", frameLength)
-        print("First sample:", pointer[0])
-        print("Middle sample:", pointer[frameLength / 2])
-        print("Non-zero samples:", nonZeroCount)
-        print("Mic max level:", maxLevel)
-
         let samples = Array(
             UnsafeBufferPointer(start: pointer, count: frameLength)
         )
 
         audioSamples.append(contentsOf: samples)
 
-        let maxSamples = Int(48_000 * 4)
+        let maxSamples = Int(inputSampleRate * maxSeconds)
 
         if audioSamples.count > maxSamples {
             audioSamples.removeFirst(audioSamples.count - maxSamples)
@@ -219,18 +214,49 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     private func commandAfterOdin(from text: String) -> String? {
+
         let lower = text.lowercased()
 
-        guard let range = lower.range(of: "odin") else {
-            return nil
+        let prefixes = [
+            "hey",
+            "hi",
+            "okey",
+            "okay",
+            "ok",
+            "yo",
+            "hello"
+        ]
+
+        let names = [
+            "odin",
+            "oden",
+            "uden"
+        ]
+
+        var wakePhrases: [String] = []
+
+        for prefix in prefixes {
+            for name in names {
+                wakePhrases.append("\(prefix) \(name)")
+            }
         }
 
-        let command = text[range.upperBound...]
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        for phrase in wakePhrases {
 
-        return command.isEmpty ? nil : command
+            if let range = lower.range(of: phrase) {
+
+                let command = text[range.upperBound...]
+                    .trimmingCharacters(
+                        in: .whitespacesAndNewlines
+                    )
+
+                return command.isEmpty ? nil : command
+            }
+        }
+
+        return nil
     }
-
+    
     private func downsampleTo16k(
         _ samples: [Float],
         inputSampleRate: Double
