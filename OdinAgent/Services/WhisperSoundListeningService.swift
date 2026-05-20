@@ -2,14 +2,14 @@
 //  WhisperSoundListeningService.swift
 //  OdinAgent
 //
-//  Created by yang on 5/19/26.
-//
 
 import Foundation
 import AVFoundation
 import Combine
 
-final class WhisperSoundListeningService: ObservableObject, SoundListeningService {
+final class WhisperSoundListeningService:
+    ObservableObject,
+    SoundListeningService {
 
     var onTranscript: ((String) -> Void)?
 
@@ -18,17 +18,24 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     private let audioEngine = AVAudioEngine()
+
     private var audioSamples: [Float] = []
+
     private var timer: Timer?
 
     private let inputSampleRate: Double = 48_000
     private let maxSeconds: Double = 4
 
     private var whisper: WhisperContext?
+
     private var isTapInstalled = false
 
+    private var isTranscribing = false
+
     func startListening() {
+
         requestMicrophonePermission { [weak self] granted in
+
             guard let self else { return }
 
             guard granted else {
@@ -37,20 +44,27 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             }
 
             DispatchQueue.main.async {
+
                 if self.audioEngine.isRunning {
                     print("Whisper already listening")
                     return
                 }
 
                 if self.whisper == nil {
+
                     do {
                         self.whisper = try WhisperContext.create()
+
                         print("Whisper loaded successfully")
+
                     } catch {
+
                         print("Failed to load whisper:", error)
                         return
                     }
+
                 } else {
+
                     print("Whisper already loaded")
                 }
 
@@ -61,11 +75,14 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     func stopListening() {
+
         timer?.invalidate()
         timer = nil
 
         if isTapInstalled {
+
             audioEngine.inputNode.removeTap(onBus: 0)
+
             isTapInstalled = false
         }
 
@@ -81,32 +98,43 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     private func requestMicrophonePermission(
         completion: @escaping (Bool) -> Void
     ) {
+
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
+
         case .authorized:
+
             completion(true)
 
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .audio) { granted in
+
+            AVCaptureDevice.requestAccess(for: .audio) {
+                granted in
+
                 completion(granted)
             }
 
         case .denied, .restricted:
+
             completion(false)
 
         @unknown default:
+
             completion(false)
         }
     }
 
     private func startAudioEngine() {
+
         guard !audioEngine.isRunning else {
-            print("Audio engine already running; skipping start")
+
+            print("Audio engine already running")
             return
         }
 
         let inputNode = audioEngine.inputNode
 
         if isTapInstalled {
+
             inputNode.removeTap(onBus: 0)
             isTapInstalled = false
         }
@@ -128,77 +156,104 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             bufferSize: 4800,
             format: format
         ) { [weak self] buffer, _ in
+
             self?.appendBuffer(buffer)
         }
 
         isTapInstalled = true
 
         do {
+
             audioEngine.prepare()
+
             try audioEngine.start()
-            print("Audio engine running:", audioEngine.isRunning)
+
+            print(
+                "Audio engine running:",
+                audioEngine.isRunning
+            )
+
         } catch {
-            print("Could not start audio engine:", error)
+
+            print(
+                "Could not start audio engine:",
+                error
+            )
         }
     }
 
     private func appendBuffer(_ buffer: AVAudioPCMBuffer) {
+
         guard buffer.frameLength > 0 else {
             return
         }
 
         guard let channelData = buffer.floatChannelData else {
+
             print("No floatChannelData")
             return
         }
 
         let frameLength = Int(buffer.frameLength)
+
         let pointer = channelData[0]
 
-        var maxLevel: Float = 0
-        var nonZeroCount = 0
-
-        for i in 0..<frameLength {
-            let value = pointer[i]
-
-            if value != 0 {
-                nonZeroCount += 1
-            }
-
-            maxLevel = max(maxLevel, abs(value))
-        }
-
         let samples = Array(
-            UnsafeBufferPointer(start: pointer, count: frameLength)
+            UnsafeBufferPointer(
+                start: pointer,
+                count: frameLength
+            )
         )
 
         audioSamples.append(contentsOf: samples)
 
-        let maxSamples = Int(inputSampleRate * maxSeconds)
+        let maxSamples =
+            Int(inputSampleRate * maxSeconds)
 
         if audioSamples.count > maxSamples {
-            audioSamples.removeFirst(audioSamples.count - maxSamples)
+
+            audioSamples.removeFirst(
+                audioSamples.count - maxSamples
+            )
         }
     }
 
     private func startTranscriptionTimer() {
+
         timer?.invalidate()
 
         timer = Timer.scheduledTimer(
             withTimeInterval: 2.0,
             repeats: true
         ) { [weak self] _ in
+
             self?.transcribeCurrentAudio()
         }
     }
 
     private func transcribeCurrentAudio() {
+
+        guard !isTranscribing else {
+
+            print("Already transcribing; skipping")
+            return
+        }
+
         let samples = audioSamples
 
         guard samples.count > Int(inputSampleRate) else {
-            print("Not enough audio yet:", samples.count)
+
+            print(
+                "Not enough audio yet:",
+                samples.count
+            )
+
             return
         }
+
+        isTranscribing = true
+
+        audioSamples.removeAll()
 
         let samples16k = downsampleTo16k(
             samples,
@@ -208,8 +263,16 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         print("Send to Whisper:", samples16k.count)
 
         Task {
+
             guard let whisper else {
+
                 print("Whisper not initialized")
+
+                await MainActor.run {
+
+                    self.isTranscribing = false
+                }
+
                 return
             }
 
@@ -220,13 +283,21 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             print("WHISPER transcript:", transcript)
 
             await MainActor.run {
+
+                self.isTranscribing = false
+
                 self.handleTranscript(transcript)
             }
         }
     }
 
-    private func handleTranscript(_ transcript: String) {
-        guard let command = commandAfterOdin(from: transcript) else {
+    private func handleTranscript(
+        _ transcript: String
+    ) {
+
+        guard let command =
+            commandAfterOdin(from: transcript)
+        else {
             return
         }
 
@@ -235,7 +306,10 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         onTranscript?(command)
     }
 
-    private func commandAfterOdin(from text: String) -> String? {
+    private func commandAfterOdin(
+        from text: String
+    ) -> String? {
+
         let cleaned = text
             .lowercased()
             .replacingOccurrences(
@@ -248,9 +322,14 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
                 with: " ",
                 options: .regularExpression
             )
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
 
-        print("Cleaned wake transcript:", cleaned)
+        print(
+            "Cleaned wake transcript:",
+            cleaned
+        )
 
         let prefixes = [
             "hey",
@@ -273,19 +352,28 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         var wakePhrases: [String] = []
 
         for prefix in prefixes {
+
             for name in names {
-                wakePhrases.append("\(prefix) \(name)")
+
+                wakePhrases.append(
+                    "\(prefix) \(name)"
+                )
             }
         }
 
         for phrase in wakePhrases {
+
             if let range = cleaned.range(of: phrase) {
-                let command = cleaned[range.upperBound...]
+
+                let command =
+                    cleaned[range.upperBound...]
                     .trimmingCharacters(
                         in: .whitespacesAndNewlines
                     )
 
-                return command.isEmpty ? nil : command
+                return command.isEmpty
+                    ? nil
+                    : command
             }
         }
 
@@ -296,21 +384,34 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         _ samples: [Float],
         inputSampleRate: Double
     ) -> [Float] {
+
         let outputSampleRate = 16_000.0
 
-        if abs(inputSampleRate - outputSampleRate) < 1 {
+        if abs(
+            inputSampleRate - outputSampleRate
+        ) < 1 {
+
             return samples
         }
 
-        let ratio = outputSampleRate / inputSampleRate
-        let outputCount = Int(Double(samples.count) * ratio)
+        let ratio =
+            outputSampleRate / inputSampleRate
 
-        var output = [Float](repeating: 0, count: outputCount)
+        let outputCount =
+            Int(Double(samples.count) * ratio)
+
+        var output = [Float](
+            repeating: 0,
+            count: outputCount
+        )
 
         for i in 0..<outputCount {
-            let inputIndex = Int(Double(i) / ratio)
+
+            let inputIndex =
+                Int(Double(i) / ratio)
 
             if inputIndex < samples.count {
+
                 output[i] = samples[inputIndex]
             }
         }
