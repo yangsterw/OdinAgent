@@ -187,6 +187,10 @@ final class WhisperSoundListeningService:
         guard buffer.frameLength > 0 else {
             return
         }
+        
+        guard buffer.audioBufferList.pointee.mBuffers.mDataByteSize > 0 else {
+            return
+        }
 
         guard let channelData = buffer.floatChannelData else {
 
