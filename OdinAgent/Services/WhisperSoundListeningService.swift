@@ -130,6 +130,9 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         }
 
         let frameLength = Int(buffer.frameLength)
+        guard frameLength > 0 else {
+            return
+        }
         let pointer = channelData[0]
 
         var maxLevel: Float = 0
@@ -215,7 +218,21 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
 
     private func commandAfterOdin(from text: String) -> String? {
 
-        let lower = text.lowercased()
+        let cleaned = text
+            .lowercased()
+            .replacingOccurrences(
+                of: #"[^a-z\s]"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .replacingOccurrences(
+                of: #"\s+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        print("Cleaned wake transcript:", cleaned)
 
         let prefixes = [
             "hey",
@@ -224,6 +241,8 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             "okay",
             "ok",
             "yo",
+            "you",
+            "your",
             "hello"
         ]
 
@@ -243,9 +262,9 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
 
         for phrase in wakePhrases {
 
-            if let range = lower.range(of: phrase) {
+            if let range = cleaned.range(of: phrase) {
 
-                let command = text[range.upperBound...]
+                let command = cleaned[range.upperBound...]
                     .trimmingCharacters(
                         in: .whitespacesAndNewlines
                     )

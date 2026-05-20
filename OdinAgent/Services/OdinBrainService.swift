@@ -2,14 +2,12 @@ import Foundation
 
 final class OdinBrainService {
 
-    private let ollamaService =
-        OdinOllamaService()
+    private let ollamaService = OdinOllamaService()
+    private let memoryService = OdinMemoryService()
 
     func respond(to command: String) async -> String {
 
         let lower = command.lowercased()
-
-        // fast local rules first
 
         if lower.contains("good boy") {
             return "Awoo! Thank you. I am a very good boy."
@@ -19,19 +17,39 @@ final class OdinBrainService {
             return "Woof woof! Ruff!"
         }
 
+        if lower.contains("clear memory") {
+            memoryService.clearMemory()
+            return "Okay. I cleared my memory."
+        }
+
+        let memory = memoryService.loadMemory()
+
+        let prompt = """
+        You are Odin, a cute male desktop dog assistant.
+
+        Use this saved memory as context:
+        \(memory)
+
+        Current user message:
+        \(command)
+
+        Respond as Odin. Be concise, friendly, and helpful.
+        """
+
         do {
+            let response = try await ollamaService.generateResponse(
+                for: prompt
+            )
 
-            let aiResponse =
-                try await ollamaService.generateResponse(
-                    for: command
-                )
+            memoryService.saveInteraction(
+                user: command,
+                odin: response
+            )
 
-            return aiResponse
+            return response
 
         } catch {
-
             print("Ollama error:", error)
-
             return "Ruff... my brain is currently offline."
         }
     }

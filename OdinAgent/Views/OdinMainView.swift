@@ -19,6 +19,8 @@ struct OdinMainView: View {
 
     private let brainService = OdinBrainService()
     
+    @State private var latestResponse = ""
+    
     var body: some View {
 
         VStack(spacing: 20) {
@@ -32,11 +34,17 @@ struct OdinMainView: View {
             .scaledToFit()
             .frame(width: 300, height: 300)
 
-            Button("Make Odin Talk") {
-                speechService.speak(
-                    "Hello, I am Odin. I can hear you now."
-                )
-            }
+            Text(latestResponse)
+                .font(.headline)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+                .frame(maxWidth: 400)
+            
+//            Button("Make Odin Talk") {
+//                speechService.speak(
+//                    "Hello, I am Odin. I can hear you now."
+//                )
+//            }
         }
         .padding()
         
@@ -68,9 +76,9 @@ struct OdinMainView: View {
                     let response = await brainService.respond(to: transcript)
                     
                     await MainActor.run {
+                        latestResponse = response
                         speechService.speak(response)
-                    }
-                }
+                    }                }
             }
             whisperService.startListening()
         }

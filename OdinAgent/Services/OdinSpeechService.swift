@@ -50,7 +50,7 @@ final class OdinSpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDe
             identifier: "com.apple.voice.compact.en-GB.Daniel"
         )
 
-        utterance.rate = Float.random(in: 0.52...0.58)
+        utterance.rate = Float.random(in: 0.48...0.55)
         utterance.pitchMultiplier = Float.random(in: 1.14...1.22)
         utterance.volume = 1.0
 
