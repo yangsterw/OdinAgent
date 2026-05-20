@@ -2,10 +2,20 @@ import Foundation
 
 final class OdinBrainService {
 
-    private let ollamaService = OdinOllamaService()
-    private let memoryService = OdinMemoryService()
+    private let ollamaService =
+        OdinOllamaService()
+
+    private let memoryService =
+        OdinMemoryService()
+
+    private let commandService =
+        OdinCommandService()
 
     func respond(to command: String) async -> String {
+
+        if let commandResponse = commandService.handle(command) {
+            return commandResponse
+        }
 
         let lower = command.lowercased()
 
@@ -37,9 +47,8 @@ final class OdinBrainService {
         """
 
         do {
-            let response = try await ollamaService.generateResponse(
-                for: prompt
-            )
+            let response =
+                try await ollamaService.generateResponse(for: prompt)
 
             memoryService.saveInteraction(
                 user: command,

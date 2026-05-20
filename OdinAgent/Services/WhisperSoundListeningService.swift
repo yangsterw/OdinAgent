@@ -5,14 +5,17 @@
 //  Created by yang on 5/19/26.
 //
 
-
 import Foundation
 import AVFoundation
 import Combine
 
 final class WhisperSoundListeningService: ObservableObject, SoundListeningService {
-    
+
     var onTranscript: ((String) -> Void)?
+
+    var isListening: Bool {
+        audioEngine.isRunning
+    }
 
     private let audioEngine = AVAudioEngine()
     private var audioSamples: [Float] = []
@@ -22,9 +25,8 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     private let maxSeconds: Double = 4
 
     private var whisper: WhisperContext?
-    
     private var isTapInstalled = false
-    
+
     func startListening() {
         requestMicrophonePermission { [weak self] granted in
             guard let self else { return }
@@ -35,6 +37,10 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             }
 
             DispatchQueue.main.async {
+                if self.audioEngine.isRunning {
+                    print("Whisper already listening")
+                    return
+                }
 
                 if self.whisper == nil {
                     do {
@@ -53,13 +59,19 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             }
         }
     }
-    
+
     func stopListening() {
         timer?.invalidate()
         timer = nil
 
-        audioEngine.inputNode.removeTap(onBus: 0)
-        audioEngine.stop()
+        if isTapInstalled {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            isTapInstalled = false
+        }
+
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
 
         audioSamples.removeAll()
 
@@ -87,12 +99,19 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     private func startAudioEngine() {
+        guard !audioEngine.isRunning else {
+            print("Audio engine already running; skipping start")
+            return
+        }
+
         let inputNode = audioEngine.inputNode
 
         if isTapInstalled {
             inputNode.removeTap(onBus: 0)
             isTapInstalled = false
         }
+
+        audioEngine.reset()
 
         let format = inputNode.inputFormat(forBus: 0)
 
@@ -124,15 +143,16 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     private func appendBuffer(_ buffer: AVAudioPCMBuffer) {
+        guard buffer.frameLength > 0 else {
+            return
+        }
+
         guard let channelData = buffer.floatChannelData else {
             print("No floatChannelData")
             return
         }
 
         let frameLength = Int(buffer.frameLength)
-        guard frameLength > 0 else {
-            return
-        }
         let pointer = channelData[0]
 
         var maxLevel: Float = 0
@@ -160,7 +180,7 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
             audioSamples.removeFirst(audioSamples.count - maxSamples)
         }
     }
-    
+
     private func startTranscriptionTimer() {
         timer?.invalidate()
 
@@ -188,7 +208,6 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         print("Send to Whisper:", samples16k.count)
 
         Task {
-
             guard let whisper else {
                 print("Whisper not initialized")
                 return
@@ -200,13 +219,13 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
 
             print("WHISPER transcript:", transcript)
 
-            handleTranscript(transcript)
+            await MainActor.run {
+                self.handleTranscript(transcript)
+            }
         }
     }
 
     private func handleTranscript(_ transcript: String) {
-//        print("Whisper transcript:", transcript)
-
         guard let command = commandAfterOdin(from: transcript) else {
             return
         }
@@ -217,7 +236,6 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
     }
 
     private func commandAfterOdin(from text: String) -> String? {
-
         let cleaned = text
             .lowercased()
             .replacingOccurrences(
@@ -261,9 +279,7 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
         }
 
         for phrase in wakePhrases {
-
             if let range = cleaned.range(of: phrase) {
-
                 let command = cleaned[range.upperBound...]
                     .trimmingCharacters(
                         in: .whitespacesAndNewlines
@@ -275,7 +291,7 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
 
         return nil
     }
-    
+
     private func downsampleTo16k(
         _ samples: [Float],
         inputSampleRate: Double

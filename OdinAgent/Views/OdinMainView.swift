@@ -43,6 +43,14 @@ struct OdinMainView: View {
             .frame(width: 300, height: 300)
             .clipped()
 
+            Button("Stop Speaking") {
+                speechService.stop()
+                mouthAnimationService.stop()
+                idleAnimationService.start()
+                odinState = "Listening"
+            }
+            .disabled(!speechService.isSpeaking)
+            
             Text(latestResponse)
                 .font(.headline)
                 .multilineTextAlignment(.center)
