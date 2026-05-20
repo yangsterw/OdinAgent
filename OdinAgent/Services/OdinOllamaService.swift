@@ -1,11 +1,3 @@
-//
-//  OdinOllamaService.swift
-//  OdinAgent
-//
-//  Created by yang on 5/19/26.
-//
-
-
 import Foundation
 
 final class OdinOllamaService {
@@ -22,22 +14,7 @@ final class OdinOllamaService {
 
         let body: [String: Any] = [
             "model": "llama3.2:3b",
-            "prompt": """
-            You are Odin, a cute male desktop dog assistant.
-
-            Personality:
-            - playful
-            - friendly
-            - concise
-            - slightly funny
-            - dog-like sometimes
-            - never overly verbose
-
-            User said:
-            \(prompt)
-
-            Respond as Odin:
-            """,
+            "prompt": prompt,
             "stream": false
         ]
 
@@ -46,13 +23,11 @@ final class OdinOllamaService {
         )
 
         var request = URLRequest(url: url)
-
         request.httpMethod = "POST"
         request.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         request.httpBody = jsonData
 
         let (data, _) = try await URLSession.shared.data(
@@ -62,18 +37,10 @@ final class OdinOllamaService {
         guard let json = try JSONSerialization.jsonObject(
             with: data
         ) as? [String: Any] else {
-
-            throw NSError(
-                domain: "OdinOllamaService",
-                code: 1
-            )
+            throw NSError(domain: "OdinOllamaService", code: 1)
         }
 
-        let response =
-            json["response"] as? String ?? ""
-
-        return response.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        )
+        return (json["response"] as? String ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
