@@ -1,52 +1,45 @@
-//
-//  OdinMainView.swift
-//  OdinAgent
-//
-//  Created by yang on 5/19/26.
-//
-
-
 import SwiftUI
 
 struct OdinMainView: View {
 
-    @StateObject private var viewModel = OdinViewModel()
+    @StateObject private var speechService =
+        OdinSpeechService()
+
+    @StateObject private var mouthAnimationService =
+        DogMouthAnimationService()
+
+    private let phonemeService =
+        DogPhonemeAnimatorService()
 
     var body: some View {
+
         VStack(spacing: 20) {
 
-            Image(viewModel.dogImageName)
+            Image(mouthAnimationService.currentImageName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 220, height: 220)
+                .frame(width: 300, height: 300)
 
-            Text("Odin")
-                .font(.largeTitle)
-                .bold()
+            Button("Make Odin Talk") {
 
-            Text(viewModel.statusText)
-                .multilineTextAlignment(.center)
-                .frame(width: 340)
+                speechService.onSpeechStarted = { spokenText in
 
-            if !viewModel.latestTranscript.isEmpty {
-                Text("Transcript: \(viewModel.latestTranscript)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 340)
-            }
+                    let frames =
+                        phonemeService.frames(for: spokenText)
 
-            HStack {
-                Button("Start Listening") {
-                    viewModel.startListening()
+                    mouthAnimationService.play(frames: frames)
                 }
 
-                Button("Stop Listening") {
-                    viewModel.stopListening()
+                speechService.onSpeechFinished = {
+
+                    mouthAnimationService.stop()
                 }
+
+                speechService.speak(
+                    "Hello, I am Odin. I can hear you now."
+                )
             }
         }
         .padding()
-        .frame(width: 420, height: 520)
     }
 }

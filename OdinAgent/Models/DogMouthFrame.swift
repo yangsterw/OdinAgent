@@ -8,7 +8,8 @@
 
 import Foundation
 
-struct DogMouthFrame: Identifiable, Equatable {
+struct DogMouthFrame: Identifiable {
     let id = UUID()
     let imageName: String
+    let duration: Double
 }
