@@ -45,8 +45,7 @@ final class OdinBrainService {
             return response
         }
 
-        if let commandResponse = commandService.handle(command) {
-            conversationService.addUserMessage(command)
+        if let commandResponse = await commandService.handle(command) {            conversationService.addUserMessage(command)
             conversationService.addOdinMessage(commandResponse)
             memoryService.saveInteraction(user: command, odin: commandResponse)
             return commandResponse

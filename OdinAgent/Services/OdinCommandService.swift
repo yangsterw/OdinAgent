@@ -10,9 +10,83 @@ import Foundation
 import AppKit
 
 final class OdinCommandService {
+    private let trelloService = OdinTrelloService()
+    
+    private func parseTrelloTask(
+        _ command: String
+    ) -> (listName: String, title: String)? {
 
-    func handle(_ command: String) -> String? {
+        let lower = command.lowercased()
 
+        guard lower.contains("add a task") ||
+              lower.contains("add task") else {
+            return nil
+        }
+
+        let listAliases: [String: String] = [
+            "today's highest priority": "today's highest priority",
+            "todays highest priority": "today's highest priority",
+            "today highest priority": "today's highest priority",
+            "highest priority": "today's highest priority",
+
+            "in progress": "in progress",
+            "progress": "in progress",
+
+            "upcoming priorities": "upcoming priorities",
+            "upcoming priority": "upcoming priorities",
+            "upcoming": "upcoming priorities",
+
+            "future consideration": "future consideration",
+            "future": "future consideration",
+
+            "blocked": "blocked"
+        ]
+
+        var matchedListName = "today's highest priority"
+
+        for alias in listAliases.keys.sorted(by: { $0.count > $1.count }) {
+            if lower.contains(alias) {
+                matchedListName = listAliases[alias] ?? matchedListName
+                break
+            }
+        }
+
+        let titleMarkers = [
+            "the task is",
+            "task is",
+            "called",
+            "named",
+            "to do",
+            "todo"
+        ]
+
+        for marker in titleMarkers {
+            if let range = lower.range(of: marker) {
+                let title = command[range.upperBound...]
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "\"'., "))
+
+                if !title.isEmpty {
+                    return (
+                        listName: matchedListName,
+                        title: title
+                    )
+                }
+            }
+        }
+
+        return nil
+    }
+    
+    func handle(_ command: String) async -> String? {
+
+        if let trelloTask = parseTrelloTask(command) {
+            return await trelloService.addTask(
+                title: trelloTask.title,
+                toList: trelloTask.listName
+            )
+        }
+        
         let lower = command.lowercased()
 
         if lower.contains("open spotify") {
