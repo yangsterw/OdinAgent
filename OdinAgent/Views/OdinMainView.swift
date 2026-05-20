@@ -23,6 +23,7 @@ struct OdinMainView: View {
     @State private var odinState = "Idle"
     @State private var latestResponse = ""
     @State private var typedCommand = ""
+    @State private var currentBrainTask: Task<Void, Never>?
 
     var body: some View {
 
@@ -154,10 +155,10 @@ struct OdinMainView: View {
             latestResponse = "Thinking..."
         }
 
-        Task {
-            let response =
-                await brainService.respond(to: command)
-
+        currentBrainTask?.cancel()
+        currentBrainTask = Task {
+            let response = await brainService.respond(to: command)
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 latestResponse = response
                 speechService.speak(response)

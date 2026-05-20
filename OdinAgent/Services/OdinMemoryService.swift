@@ -1,6 +1,6 @@
 import Foundation
 
-final class OdinMemoryService {
+actor OdinMemoryService {
 
     private let fileName = "OdinMemory.txt"
     private let maxCharacters = 20_000
@@ -77,3 +77,4 @@ final class OdinMemoryService {
         return String(memory.suffix(maxCharacters))
     }
 }
+

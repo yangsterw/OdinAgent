@@ -1,6 +1,15 @@
 import Foundation
 
 final class OdinOllamaService {
+    private struct GenerateRequest: Encodable {
+        let model: String
+        let prompt: String
+        let stream: Bool
+    }
+
+    private struct GenerateResponse: Decodable {
+        let response: String
+    }
 
     func generateResponse(
         for prompt: String
@@ -12,15 +21,12 @@ final class OdinOllamaService {
             throw URLError(.badURL)
         }
 
-        let body: [String: Any] = [
-            "model": "llama3.2:3b",
-            "prompt": prompt,
-            "stream": false
-        ]
-
-        let jsonData = try JSONSerialization.data(
-            withJSONObject: body
+        let requestBody = GenerateRequest(
+            model: "llama3.2:3b",
+            prompt: prompt,
+            stream: false
         )
+        let jsonData = try JSONEncoder().encode(requestBody)
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -30,17 +36,15 @@ final class OdinOllamaService {
         )
         request.httpBody = jsonData
 
-        let (data, _) = try await URLSession.shared.data(
+        let (data, response) = try await URLSession.shared.data(
             for: request
         )
-
-        guard let json = try JSONSerialization.jsonObject(
-            with: data
-        ) as? [String: Any] else {
-            throw NSError(domain: "OdinOllamaService", code: 1)
+        guard let http = response as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
         }
 
-        return (json["response"] as? String ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let decoded = try JSONDecoder().decode(GenerateResponse.self, from: data)
+        return decoded.response.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

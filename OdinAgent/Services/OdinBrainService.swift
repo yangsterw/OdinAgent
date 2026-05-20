@@ -14,47 +14,46 @@ final class OdinBrainService {
     private let conversationService =
         OdinConversationService()
 
+    private func recordAndReturn(_ user: String, _ odin: String) async -> String {
+        await conversationService.addUserMessage(user)
+        await conversationService.addOdinMessage(odin)
+        await memoryService.saveInteraction(user: user, odin: odin)
+        return odin
+    }
+
     func respond(to command: String) async -> String {
 
         let lower = command.lowercased()
 
         if lower.contains("clear conversation") {
-            conversationService.clear()
+            await conversationService.clear()
             return "Okay. I cleared our current conversation."
         }
 
         if lower.contains("clear memory") {
-            memoryService.clearMemory()
-            conversationService.clear()
+            await memoryService.clearMemory()
+            await conversationService.clear()
             return "Okay. I cleared my memory."
         }
 
         if lower.contains("good boy") {
             let response = "Awoo! Thank you. I am a very good boy."
-            conversationService.addUserMessage(command)
-            conversationService.addOdinMessage(response)
-            memoryService.saveInteraction(user: command, odin: response)
-            return response
+            return await recordAndReturn(command, response)
         }
 
         if lower.contains("bark") {
             let response = "Woof woof! Ruff!"
-            conversationService.addUserMessage(command)
-            conversationService.addOdinMessage(response)
-            memoryService.saveInteraction(user: command, odin: response)
-            return response
+            return await recordAndReturn(command, response)
         }
 
-        if let commandResponse = await commandService.handle(command) {            conversationService.addUserMessage(command)
-            conversationService.addOdinMessage(commandResponse)
-            memoryService.saveInteraction(user: command, odin: commandResponse)
-            return commandResponse
+        if let commandResponse = await commandService.handle(command) {
+            return await recordAndReturn(command, commandResponse)
         }
 
-        conversationService.addUserMessage(command)
+        await conversationService.addUserMessage(command)
 
-        let memory = memoryService.loadMemory()
-        let recentConversation = conversationService.contextText()
+        let memory = await memoryService.loadMemory()
+        let recentConversation = await conversationService.contextText()
 
         let prompt = """
         You are Odin, a cute male desktop dog assistant.
@@ -85,9 +84,8 @@ final class OdinBrainService {
                     for: prompt
                 )
 
-            conversationService.addOdinMessage(response)
-
-            memoryService.saveInteraction(
+            await conversationService.addOdinMessage(response)
+            await memoryService.saveInteraction(
                 user: command,
                 odin: response
             )
@@ -100,9 +98,10 @@ final class OdinBrainService {
             let fallback =
                 "Ruff... my brain is currently offline."
 
-            conversationService.addOdinMessage(fallback)
+            await conversationService.addOdinMessage(fallback)
 
             return fallback
         }
     }
 }
+

@@ -5,12 +5,20 @@
 //  Created by yang on 5/19/26.
 //
 
-
 import Foundation
 import AppKit
 
 final class OdinCommandService {
     private let trelloService = OdinTrelloService()
+    
+    private let bundleIDs: [String: String] = [
+        "Spotify": "com.spotify.client",
+        "Safari": "com.apple.Safari",
+        "Visual Studio Code": "com.microsoft.VSCode",
+        "Xcode": "com.apple.dt.Xcode",
+        "Terminal": "com.apple.Terminal",
+        "Microsoft Outlook": "com.microsoft.Outlook"
+    ]
     
     private func parseTrelloTask(
         _ command: String
@@ -61,15 +69,15 @@ final class OdinCommandService {
         ]
 
         for marker in titleMarkers {
-            if let range = lower.range(of: marker) {
-                let title = command[range.upperBound...]
+            if let range = command.range(of: marker, options: .caseInsensitive) {
+                let titleSlice = command[range.upperBound...]
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                     .trimmingCharacters(in: CharacterSet(charactersIn: "\"'., "))
 
-                if !title.isEmpty {
+                if !titleSlice.isEmpty {
                     return (
                         listName: matchedListName,
-                        title: title
+                        title: String(titleSlice)
                     )
                 }
             }
@@ -90,64 +98,64 @@ final class OdinCommandService {
         let lower = command.lowercased()
 
         if lower.contains("open spotify") {
-            openApp(named: "Spotify")
+            await openApp(named: "Spotify")
             return "Opening Spotify."
         }
 
         if lower.contains("open safari") {
-            openApp(named: "Safari")
+            await openApp(named: "Safari")
             return "Opening Safari."
         }
 
         if lower.contains("open xcode") {
-            openApp(named: "Xcode")
+            await openApp(named: "Xcode")
             return "Opening Xcode."
         }
 
         if lower.contains("open visual studio code") ||
             lower.contains("open vscode") {
 
-            openApp(named: "Visual Studio Code")
+            await openApp(named: "Visual Studio Code")
             return "Opening Visual Studio Code."
         }
         
         if lower.contains("open visual studio code") ||
             lower.contains("open vs code") {
 
-            openApp(named: "Visual Studio Code")
+            await openApp(named: "Visual Studio Code")
             return "Opening Visual Studio Code."
         }
 
         if lower.contains("open terminal") {
-            openApp(named: "Terminal")
+            await openApp(named: "Terminal")
             return "Opening Terminal."
         }
 
         if lower.contains("open outlook") {
-            openApp(named: "Microsoft Outlook")
+            await openApp(named: "Microsoft Outlook")
             return "Opening Outlook."
         }
         
         if lower.contains("open email") {
-            openApp(named: "Microsoft Outlook")
+            await openApp(named: "Microsoft Outlook")
             return "Opening Email."
         }
         
         if lower.contains("quit spotify") ||
             lower.contains("close spotify") {
-            quitApp(named: "Spotify")
+            await quitApp(named: "Spotify")
             return "Closing Spotify."
         }
 
         if lower.contains("quit safari") ||
             lower.contains("close safari") {
-            quitApp(named: "Safari")
+            await quitApp(named: "Safari")
             return "Closing Safari."
         }
 
         if lower.contains("quit outlook") ||
             lower.contains("close outlook") {
-            quitApp(named: "Microsoft Outlook")
+            await quitApp(named: "Microsoft Outlook")
             return "Closing Outlook."
         }
 
@@ -155,32 +163,35 @@ final class OdinCommandService {
             lower.contains("close visual studio code") ||
             lower.contains("quit vscode") ||
             lower.contains("close vscode") {
-            quitApp(named: "Visual Studio Code")
+            await quitApp(named: "Visual Studio Code")
             return "Closing Visual Studio Code."
         }
 
         if lower.contains("quit xcode") ||
             lower.contains("close xcode") {
-            quitApp(named: "Xcode")
+            await quitApp(named: "Xcode")
             return "Closing Xcode."
         }
 
         if lower.contains("quit terminal") ||
             lower.contains("close terminal") {
-            quitApp(named: "Terminal")
+            await quitApp(named: "Terminal")
             return "Closing Terminal."
         }
         if lower.contains("quit odin") ||
             lower.contains("close odin") ||
             lower.contains("exit odin") {
 
-            NSApplication.shared.terminate(nil)
+            await MainActor.run {
+                NSApplication.shared.terminate(nil)
+            }
             return "Goodbye."
         }
 
         return nil
     }
 
+    @MainActor
     private func openApp(named appName: String) {
         NSWorkspace.shared.openApplication(
             at: URL(fileURLWithPath: "/Applications/\(appName).app"),
@@ -188,23 +199,20 @@ final class OdinCommandService {
         )
     }
     
+    @MainActor
     private func quitApp(named appName: String) {
-        let script = """
-        tell application "\(appName)"
-            quit
-        end tell
-        """
+        guard let bundleID = bundleIDs[appName] else {
+            print("Unknown bundle ID for \(appName)")
+            return
+        }
 
-        var error: NSDictionary?
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
 
-        if let appleScript = NSAppleScript(source: script) {
-            appleScript.executeAndReturnError(&error)
-
-            if let error {
-                print("AppleScript quit error:", error)
-            } else {
-                print("Quit command sent to \(appName)")
-            }
+        if let app = runningApps.first {
+            app.terminate()
+            print("Terminate command sent to \(appName)")
+        } else {
+            print("\(appName) is not running")
         }
     }
 }

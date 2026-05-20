@@ -14,7 +14,7 @@ struct OdinConversationMessage {
     let date: Date
 }
 
-final class OdinConversationService {
+actor OdinConversationService {
 
     private var messages: [OdinConversationMessage] = []
 
