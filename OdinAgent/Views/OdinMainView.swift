@@ -43,7 +43,7 @@ struct OdinMainView: View {
             .frame(width: 300, height: 300)
             .clipped()
 
-            Button("Stop Speaking") {
+            Button("Woof Stop") {
                 speechService.stop()
                 mouthAnimationService.stop()
                 idleAnimationService.start()
@@ -51,15 +51,30 @@ struct OdinMainView: View {
             }
             .disabled(!speechService.isSpeaking)
             
-            Text(latestResponse)
-                .font(.headline)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-                .frame(maxWidth: 400)
-
             Text("State: \(odinState)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            
+            ScrollView {
+                Text(latestResponse)
+                    .font(.headline)
+                    .multilineTextAlignment(.leading)
+                    .frame(
+                        maxWidth: .infinity,
+                        alignment: .leading
+                    )
+                    .padding(12)
+            }
+            .frame(
+                maxWidth: .infinity,
+                minHeight: 120,
+                maxHeight: 220
+            )
+            .background(
+                Color.gray.opacity(0.12)
+            )
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
         }
         .padding()
         .onAppear {
