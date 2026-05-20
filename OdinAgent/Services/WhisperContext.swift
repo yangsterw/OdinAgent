@@ -129,7 +129,7 @@ final class WhisperContext {
                 in: .whitespacesAndNewlines
             )
 
-            print("WHISPER TRANSCRIPT:", cleaned)
+//            print("WHISPER TRANSCRIPT:", cleaned)
 
             return cleaned
 

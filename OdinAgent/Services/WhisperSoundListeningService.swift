@@ -198,14 +198,14 @@ final class WhisperSoundListeningService: ObservableObject, SoundListeningServic
                 samples: samples16k
             )
 
-            print("WHISPER RESULT:", transcript)
+            print("WHISPER transcript:", transcript)
 
             handleTranscript(transcript)
         }
     }
 
     private func handleTranscript(_ transcript: String) {
-        print("Whisper transcript:", transcript)
+//        print("Whisper transcript:", transcript)
 
         guard let command = commandAfterOdin(from: transcript) else {
             return

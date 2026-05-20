@@ -17,69 +17,95 @@ struct OdinMainView: View {
     private let phonemeService =
         DogPhonemeAnimatorService()
 
-    private let brainService = OdinBrainService()
-    
+    private let brainService =
+        OdinBrainService()
+
+    @State private var odinState = "Idle"
+
     @State private var latestResponse = ""
-    
+
     var body: some View {
 
         VStack(spacing: 20) {
 
-            Image(
-                speechService.isSpeaking
-                ? mouthAnimationService.currentImageName
-                : idleAnimationService.idleImageName
-            )
-            .resizable()
-            .scaledToFit()
+            ZStack {
+
+                Image(
+                    speechService.isSpeaking
+                    ? mouthAnimationService.currentImageName
+                    : idleAnimationService.idleImageName
+                )
+                .resizable()
+                .interpolation(.none)
+                .scaledToFit()
+                .frame(width: 300, height: 300)
+            }
             .frame(width: 300, height: 300)
+            .clipped()
 
             Text(latestResponse)
                 .font(.headline)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
                 .frame(maxWidth: 400)
-            
-//            Button("Make Odin Talk") {
-//                speechService.speak(
-//                    "Hello, I am Odin. I can hear you now."
-//                )
-//            }
+
+            Text("State: \(odinState)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding()
-        
         .onAppear {
 
-            idleAnimationService.start()
+            Task { @MainActor in
+                odinState = "Listening"
+                idleAnimationService.start()
+            }
 
             speechService.onSpeechStarted = { spokenText in
 
-                whisperService.stopListening()
-                idleAnimationService.stop()
+                Task { @MainActor in
+                    odinState = "Speaking"
 
-                let frames =
-                    phonemeService.frames(for: spokenText)
+                    whisperService.stopListening()
+                    idleAnimationService.stop()
 
-                mouthAnimationService.play(frames: frames)
+                    let frames =
+                        phonemeService.frames(for: spokenText)
+
+                    mouthAnimationService.play(frames: frames)
+                }
             }
 
             speechService.onSpeechFinished = {
 
-                mouthAnimationService.stop()
-                idleAnimationService.start()
+                Task { @MainActor in
+                    odinState = "Listening"
 
-                whisperService.startListening()
+                    mouthAnimationService.stop()
+                    idleAnimationService.start()
+
+                    whisperService.startListening()
+                }
             }
 
             whisperService.onTranscript = { transcript in
+
+                Task { @MainActor in
+                    odinState = "Thinking"
+                    latestResponse = "Thinking..."
+                }
+
                 Task {
-                    let response = await brainService.respond(to: transcript)
-                    
+                    let response =
+                        await brainService.respond(to: transcript)
+
                     await MainActor.run {
                         latestResponse = response
                         speechService.speak(response)
-                    }                }
+                    }
+                }
             }
+
             whisperService.startListening()
         }
     }
