@@ -1,0 +1,881 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2F4A47B12FBD1A1B00AD072C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4A47B02FBD1A1B00AD072C /* WidgetKit.framework */; };
+		2F4A47B32FBD1A1B00AD072C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F4A47B22FBD1A1B00AD072C /* SwiftUI.framework */; };
+		2F4A47BE2FBD1A1C00AD072C /* OdinAgentWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2F4A47AE2FBD1A1B00AD072C /* OdinAgentWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2FA4C71A2FBD1EE100A97873 /* ggml-base.en.bin in Resources */ = {isa = PBXBuildFile; fileRef = 2FA4C7192FBD1EE100A97873 /* ggml-base.en.bin */; };
+		2FE75EEA2FBD300000F96F84 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FE75EE92FBD300000F96F84 /* Accelerate.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2F4A47BC2FBD1A1C00AD072C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2FF07ACB2FBD0FC200F896C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2F4A47AD2FBD1A1B00AD072C;
+			remoteInfo = OdinAgentWidgetExtension;
+		};
+		2FF07AE32FBD0FC300F896C5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2FF07ACB2FBD0FC200F896C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2FF07AD22FBD0FC200F896C5;
+			remoteInfo = OdinAgent;
+		};
+		2FF07AED2FBD0FC300F896C5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2FF07ACB2FBD0FC200F896C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2FF07AD22FBD0FC200F896C5;
+			remoteInfo = OdinAgent;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2F4A47C32FBD1A1C00AD072C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2F4A47BE2FBD1A1C00AD072C /* OdinAgentWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2F4A47AE2FBD1A1B00AD072C /* OdinAgentWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OdinAgentWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F4A47B02FBD1A1B00AD072C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		2F4A47B22FBD1A1B00AD072C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		2FA4C7192FBD1EE100A97873 /* ggml-base.en.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "ggml-base.en.bin"; sourceTree = "<group>"; };
+		2FA4EB6A2FBD268800A97873 /* OdinAgent-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OdinAgent-Bridging-Header.h"; sourceTree = "<group>"; };
+		2FE75EE92FBD300000F96F84 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		2FF07AD32FBD0FC200F896C5 /* OdinAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OdinAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FF07AE22FBD0FC300F896C5 /* OdinAgentTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OdinAgentTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FF07AEC2FBD0FC300F896C5 /* OdinAgentUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OdinAgentUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		2F4A47A92FBD183200AD072C /* Exceptions for "OdinAgent" folder in "OdinAgent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2FF07AD22FBD0FC200F896C5 /* OdinAgent */;
+		};
+		2F4A47C22FBD1A1C00AD072C /* Exceptions for "OdinAgentWidget" folder in "OdinAgentWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2F4A47AD2FBD1A1B00AD072C /* OdinAgentWidgetExtension */;
+		};
+		2F4A47C52FBD1A2C00AD072C /* Exceptions for "OdinAgent" folder in "OdinAgentWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+			);
+			target = 2F4A47AD2FBD1A1B00AD072C /* OdinAgentWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		2F4A47B42FBD1A1B00AD072C /* OdinAgentWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2F4A47C22FBD1A1C00AD072C /* Exceptions for "OdinAgentWidget" folder in "OdinAgentWidgetExtension" target */,
+			);
+			path = OdinAgentWidget;
+			sourceTree = "<group>";
+		};
+		2F4A47C82FBD1A8D00AD072C /* Views */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2F4A47C92FBD1A9500AD072C /* ViewModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		2F4A47CA2FBD1A9D00AD072C /* Models */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		2F4A47CD2FBD1ABC00AD072C /* Services */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Services;
+			sourceTree = "<group>";
+		};
+		2FF07AD52FBD0FC200F896C5 /* OdinAgent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2F4A47A92FBD183200AD072C /* Exceptions for "OdinAgent" folder in "OdinAgent" target */,
+				2F4A47C52FBD1A2C00AD072C /* Exceptions for "OdinAgent" folder in "OdinAgentWidgetExtension" target */,
+			);
+			path = OdinAgent;
+			sourceTree = "<group>";
+		};
+		2FF07AE52FBD0FC300F896C5 /* OdinAgentTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OdinAgentTests;
+			sourceTree = "<group>";
+		};
+		2FF07AEF2FBD0FC300F896C5 /* OdinAgentUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OdinAgentUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2F4A47AB2FBD1A1B00AD072C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F4A47B32FBD1A1B00AD072C /* SwiftUI.framework in Frameworks */,
+				2F4A47B12FBD1A1B00AD072C /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AD02FBD0FC200F896C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FE75EEA2FBD300000F96F84 /* Accelerate.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07ADF2FBD0FC300F896C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AE92FBD0FC300F896C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2F4A47AF2FBD1A1B00AD072C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2FE75EE92FBD300000F96F84 /* Accelerate.framework */,
+				2F4A47B02FBD1A1B00AD072C /* WidgetKit.framework */,
+				2F4A47B22FBD1A1B00AD072C /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2FA4C7182FBD1ED300A97873 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2FA4C7192FBD1EE100A97873 /* ggml-base.en.bin */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2FF07ACA2FBD0FC200F896C5 = {
+			isa = PBXGroup;
+			children = (
+				2FA4EB6A2FBD268800A97873 /* OdinAgent-Bridging-Header.h */,
+				2FA4C7182FBD1ED300A97873 /* Resources */,
+				2F4A47CD2FBD1ABC00AD072C /* Services */,
+				2F4A47CA2FBD1A9D00AD072C /* Models */,
+				2F4A47C92FBD1A9500AD072C /* ViewModels */,
+				2F4A47C82FBD1A8D00AD072C /* Views */,
+				2FF07AD52FBD0FC200F896C5 /* OdinAgent */,
+				2FF07AE52FBD0FC300F896C5 /* OdinAgentTests */,
+				2FF07AEF2FBD0FC300F896C5 /* OdinAgentUITests */,
+				2F4A47B42FBD1A1B00AD072C /* OdinAgentWidget */,
+				2F4A47AF2FBD1A1B00AD072C /* Frameworks */,
+				2FF07AD42FBD0FC200F896C5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2FF07AD42FBD0FC200F896C5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2FF07AD32FBD0FC200F896C5 /* OdinAgent.app */,
+				2FF07AE22FBD0FC300F896C5 /* OdinAgentTests.xctest */,
+				2FF07AEC2FBD0FC300F896C5 /* OdinAgentUITests.xctest */,
+				2F4A47AE2FBD1A1B00AD072C /* OdinAgentWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2F4A47AD2FBD1A1B00AD072C /* OdinAgentWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2F4A47BF2FBD1A1C00AD072C /* Build configuration list for PBXNativeTarget "OdinAgentWidgetExtension" */;
+			buildPhases = (
+				2F4A47AA2FBD1A1B00AD072C /* Sources */,
+				2F4A47AB2FBD1A1B00AD072C /* Frameworks */,
+				2F4A47AC2FBD1A1B00AD072C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2F4A47B42FBD1A1B00AD072C /* OdinAgentWidget */,
+			);
+			name = OdinAgentWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = OdinAgentWidgetExtension;
+			productReference = 2F4A47AE2FBD1A1B00AD072C /* OdinAgentWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		2FF07AD22FBD0FC200F896C5 /* OdinAgent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2FF07AF62FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgent" */;
+			buildPhases = (
+				2FF07ACF2FBD0FC200F896C5 /* Sources */,
+				2FF07AD02FBD0FC200F896C5 /* Frameworks */,
+				2FF07AD12FBD0FC200F896C5 /* Resources */,
+				2F4A47C32FBD1A1C00AD072C /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2F4A47BD2FBD1A1C00AD072C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				2F4A47C82FBD1A8D00AD072C /* Views */,
+				2F4A47C92FBD1A9500AD072C /* ViewModels */,
+				2F4A47CA2FBD1A9D00AD072C /* Models */,
+				2F4A47CD2FBD1ABC00AD072C /* Services */,
+				2FF07AD52FBD0FC200F896C5 /* OdinAgent */,
+			);
+			name = OdinAgent;
+			packageProductDependencies = (
+			);
+			productName = OdinAgent;
+			productReference = 2FF07AD32FBD0FC200F896C5 /* OdinAgent.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2FF07AE12FBD0FC300F896C5 /* OdinAgentTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2FF07AF92FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgentTests" */;
+			buildPhases = (
+				2FF07ADE2FBD0FC300F896C5 /* Sources */,
+				2FF07ADF2FBD0FC300F896C5 /* Frameworks */,
+				2FF07AE02FBD0FC300F896C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2FF07AE42FBD0FC300F896C5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				2FF07AE52FBD0FC300F896C5 /* OdinAgentTests */,
+			);
+			name = OdinAgentTests;
+			packageProductDependencies = (
+			);
+			productName = OdinAgentTests;
+			productReference = 2FF07AE22FBD0FC300F896C5 /* OdinAgentTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2FF07AEB2FBD0FC300F896C5 /* OdinAgentUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2FF07AFC2FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgentUITests" */;
+			buildPhases = (
+				2FF07AE82FBD0FC300F896C5 /* Sources */,
+				2FF07AE92FBD0FC300F896C5 /* Frameworks */,
+				2FF07AEA2FBD0FC300F896C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2FF07AEE2FBD0FC300F896C5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				2FF07AEF2FBD0FC300F896C5 /* OdinAgentUITests */,
+			);
+			name = OdinAgentUITests;
+			packageProductDependencies = (
+			);
+			productName = OdinAgentUITests;
+			productReference = 2FF07AEC2FBD0FC300F896C5 /* OdinAgentUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2FF07ACB2FBD0FC200F896C5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					2F4A47AD2FBD1A1B00AD072C = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					2FF07AD22FBD0FC200F896C5 = {
+						CreatedOnToolsVersion = 26.2;
+						LastSwiftMigration = 2620;
+					};
+					2FF07AE12FBD0FC300F896C5 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 2FF07AD22FBD0FC200F896C5;
+					};
+					2FF07AEB2FBD0FC300F896C5 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 2FF07AD22FBD0FC200F896C5;
+					};
+				};
+			};
+			buildConfigurationList = 2FF07ACE2FBD0FC200F896C5 /* Build configuration list for PBXProject "OdinAgent" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2FF07ACA2FBD0FC200F896C5;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2FF07AD42FBD0FC200F896C5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2FF07AD22FBD0FC200F896C5 /* OdinAgent */,
+				2FF07AE12FBD0FC300F896C5 /* OdinAgentTests */,
+				2FF07AEB2FBD0FC300F896C5 /* OdinAgentUITests */,
+				2F4A47AD2FBD1A1B00AD072C /* OdinAgentWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2F4A47AC2FBD1A1B00AD072C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AD12FBD0FC200F896C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FA4C71A2FBD1EE100A97873 /* ggml-base.en.bin in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AE02FBD0FC300F896C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AEA2FBD0FC300F896C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2F4A47AA2FBD1A1B00AD072C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07ACF2FBD0FC200F896C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07ADE2FBD0FC300F896C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FF07AE82FBD0FC300F896C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2F4A47BD2FBD1A1C00AD072C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2F4A47AD2FBD1A1B00AD072C /* OdinAgentWidgetExtension */;
+			targetProxy = 2F4A47BC2FBD1A1C00AD072C /* PBXContainerItemProxy */;
+		};
+		2FF07AE42FBD0FC300F896C5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2FF07AD22FBD0FC200F896C5 /* OdinAgent */;
+			targetProxy = 2FF07AE32FBD0FC300F896C5 /* PBXContainerItemProxy */;
+		};
+		2FF07AEE2FBD0FC300F896C5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2FF07AD22FBD0FC200F896C5 /* OdinAgent */;
+			targetProxy = 2FF07AED2FBD0FC300F896C5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2F4A47C02FBD1A1C00AD072C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OdinAgentWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OdinAgentWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgent.OdinAgentWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2F4A47C12FBD1A1C00AD072C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OdinAgentWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OdinAgentWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgent.OdinAgentWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2FF07AF42FBD0FC300F896C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2FF07AF52FBD0FC300F896C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		2FF07AF72FBD0FC300F896C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/yang/Dev/OdinAgent/whisper.cpp/include,
+					/Users/yang/Dev/OdinAgent/whisper.cpp/ggml/include,
+				);
+				INFOPLIST_FILE = OdinAgent/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Odin doggo needs microphone access to listen for voice commands.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/yang/Dev/OdinAgent/whisper.cpp/build/src/,
+					/Users/yang/Dev/OdinAgent/whisper.cpp/build/ggml/src/,
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-lwhisper",
+					"-lggml",
+					"-lggml-base",
+					"-lggml-cpu",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OdinAgent-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2FF07AF82FBD0FC300F896C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/yang/Dev/OdinAgent/whisper.cpp/include,
+					/Users/yang/Dev/OdinAgent/whisper.cpp/ggml/include,
+				);
+				INFOPLIST_FILE = OdinAgent/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Odin doggo needs microphone access to listen for voice commands.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/yang/Dev/OdinAgent/whisper.cpp/build/src/,
+					/Users/yang/Dev/OdinAgent/whisper.cpp/build/ggml/src/,
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-lwhisper",
+					"-lggml",
+					"-lggml-base",
+					"-lggml-cpu",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OdinAgent-Bridging-Header.h";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2FF07AFA2FBD0FC300F896C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgentTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OdinAgent.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OdinAgent";
+			};
+			name = Debug;
+		};
+		2FF07AFB2FBD0FC300F896C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgentTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OdinAgent.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OdinAgent";
+			};
+			name = Release;
+		};
+		2FF07AFD2FBD0FC300F896C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgentUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = OdinAgent;
+			};
+			name = Debug;
+		};
+		2FF07AFE2FBD0FC300F896C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = OdinPowered.OdinAgentUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = OdinAgent;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2F4A47BF2FBD1A1C00AD072C /* Build configuration list for PBXNativeTarget "OdinAgentWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F4A47C02FBD1A1C00AD072C /* Debug */,
+				2F4A47C12FBD1A1C00AD072C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FF07ACE2FBD0FC200F896C5 /* Build configuration list for PBXProject "OdinAgent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF07AF42FBD0FC300F896C5 /* Debug */,
+				2FF07AF52FBD0FC300F896C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FF07AF62FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF07AF72FBD0FC300F896C5 /* Debug */,
+				2FF07AF82FBD0FC300F896C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FF07AF92FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgentTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF07AFA2FBD0FC300F896C5 /* Debug */,
+				2FF07AFB2FBD0FC300F896C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FF07AFC2FBD0FC300F896C5 /* Build configuration list for PBXNativeTarget "OdinAgentUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF07AFD2FBD0FC300F896C5 /* Debug */,
+				2FF07AFE2FBD0FC300F896C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2FF07ACB2FBD0FC200F896C5 /* Project object */;
+}
