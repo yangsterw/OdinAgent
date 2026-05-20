@@ -117,6 +117,11 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		2FCD78302FBD7CA100DF1E8F /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
+			sourceTree = "<group>";
+		};
 		2FF07AD52FBD0FC200F896C5 /* OdinAgent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -194,6 +199,7 @@
 		2FF07ACA2FBD0FC200F896C5 = {
 			isa = PBXGroup;
 			children = (
+				2FCD78302FBD7CA100DF1E8F /* Config */,
 				2FA4EB6A2FBD268800A97873 /* OdinAgent-Bridging-Header.h */,
 				2FA4C7182FBD1ED300A97873 /* Resources */,
 				2F4A47CD2FBD1ABC00AD072C /* Services */,
@@ -264,6 +270,7 @@
 				2F4A47C92FBD1A9500AD072C /* ViewModels */,
 				2F4A47CA2FBD1A9D00AD072C /* Models */,
 				2F4A47CD2FBD1ABC00AD072C /* Services */,
+				2FCD78302FBD7CA100DF1E8F /* Config */,
 				2FF07AD52FBD0FC200F896C5 /* OdinAgent */,
 			);
 			name = OdinAgent;

@@ -63,3 +63,4 @@ fastlane/test_output
 
 OdinAgent/Resources/ggml-base.en.bin
 whisper.cpp/
+OdinAgent/Config/Secrets.swift
