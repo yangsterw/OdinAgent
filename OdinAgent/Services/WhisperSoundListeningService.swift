@@ -8,9 +8,10 @@
 
 import Foundation
 import AVFoundation
+import Combine
 
-final class WhisperSoundListeningService: SoundListeningService {
-
+final class WhisperSoundListeningService: ObservableObject, SoundListeningService {
+    
     var onTranscript: ((String) -> Void)?
 
     private let audioEngine = AVAudioEngine()
@@ -212,7 +213,9 @@ final class WhisperSoundListeningService: SoundListeningService {
             return
         }
 
-        onTranscript?("odin \(command)")
+        print("Odin command:", command)
+
+        onTranscript?(command)
     }
 
     private func commandAfterOdin(from text: String) -> String? {
