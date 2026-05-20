@@ -17,6 +17,8 @@ struct OdinMainView: View {
     private let phonemeService =
         DogPhonemeAnimatorService()
 
+    private let brainService = OdinBrainService()
+    
     var body: some View {
 
         VStack(spacing: 20) {
@@ -62,12 +64,14 @@ struct OdinMainView: View {
             }
 
             whisperService.onTranscript = { transcript in
-
-                let response = "Okay, \(transcript)"
-
-                speechService.speak(response)
+                Task {
+                    let response = await brainService.respond(to: transcript)
+                    
+                    await MainActor.run {
+                        speechService.speak(response)
+                    }
+                }
             }
-
             whisperService.startListening()
         }
     }
