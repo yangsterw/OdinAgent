@@ -10,6 +10,7 @@ import AppKit
 
 final class OdinCommandService {
     private let trelloService = OdinTrelloService()
+    private let trelloIntentService = OdinTrelloIntentService()
     private let calendarService = OdinCalendarService()
     private let calendarIntentService = OdinCalendarIntentService()
     
@@ -89,6 +90,12 @@ final class OdinCommandService {
     }
     
     func handle(_ command: String) async -> String? {
+        let lower = command.lowercased()
+
+        if shouldTryTrelloIntentParser(lower),
+           let intentResponse = await handleTrelloIntent(command) {
+            return intentResponse
+        }
 
         if let trelloTask = parseTrelloTask(command) {
             return await trelloService.addTask(
@@ -96,8 +103,6 @@ final class OdinCommandService {
                 toList: trelloTask.listName
             )
         }
-        
-        let lower = command.lowercased()
 
         if shouldTryCalendarIntentParser(lower),
            let intentResponse = await handleCalendarIntent(command) {
@@ -224,6 +229,55 @@ final class OdinCommandService {
         }
 
         return nil
+    }
+
+    private func handleTrelloIntent(_ command: String) async -> String? {
+        guard let intent = await trelloIntentService.parse(command) else {
+            return nil
+        }
+
+        switch intent {
+        case .none:
+            return nil
+
+        case .clarify(let question):
+            return question
+
+        case .addTask(let title, let listName):
+            return await trelloService.addTask(
+                title: title,
+                toList: listName
+            )
+        }
+    }
+
+    private func shouldTryTrelloIntentParser(_ lower: String) -> Bool {
+        let trelloSignals = [
+            "trello",
+            "task",
+            "tasks",
+            "card",
+            "cards",
+            "todo",
+            "to do",
+            "highest priority",
+            "priority",
+            "in progress",
+            "upcoming",
+            "future consideration",
+            "blocked"
+        ]
+
+        let createSignals = [
+            "add",
+            "create",
+            "put",
+            "make",
+            "remember"
+        ]
+
+        return trelloSignals.contains { lower.contains($0) } &&
+            createSignals.contains { lower.contains($0) }
     }
 
     private func handleCalendarIntent(_ command: String) async -> String? {
