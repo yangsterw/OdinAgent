@@ -92,7 +92,7 @@ final class OdinCommandService {
     func handle(_ command: String) async -> String? {
         let lower = command.lowercased()
 
-        if shouldTryTrelloIntentParser(lower),
+        if await shouldTryTrelloIntentParser(lower),
            let intentResponse = await handleTrelloIntent(command) {
             return intentResponse
         }
@@ -232,7 +232,15 @@ final class OdinCommandService {
     }
 
     private func handleTrelloIntent(_ command: String) async -> String? {
-        guard let intent = await trelloIntentService.parse(command) else {
+        let availableLists = await trelloService.availableLists()
+        let boardSummaries = await trelloService.boardSummaries()
+
+        guard let intent = await trelloIntentService.parse(
+            command,
+            availableLists: availableLists,
+            boardSummaries: boardSummaries,
+            defaultListName: trelloService.defaultListName
+        ) else {
             return nil
         }
 
@@ -243,6 +251,15 @@ final class OdinCommandService {
         case .clarify(let question):
             return question
 
+        case .showBoardsAndColumns:
+            return await trelloService.boardsAndColumnsSummary()
+
+        case .showTasks(let listName, let boardName):
+            return await trelloService.tasks(
+                inList: listName,
+                onBoard: boardName
+            )
+
         case .addTask(let title, let listName):
             return await trelloService.addTask(
                 title: title,
@@ -251,7 +268,7 @@ final class OdinCommandService {
         }
     }
 
-    private func shouldTryTrelloIntentParser(_ lower: String) -> Bool {
+    private func shouldTryTrelloIntentParser(_ lower: String) async -> Bool {
         let trelloSignals = [
             "trello",
             "task",
@@ -276,8 +293,58 @@ final class OdinCommandService {
             "remember"
         ]
 
-        return trelloSignals.contains { lower.contains($0) } &&
-            createSignals.contains { lower.contains($0) }
+        let readSignals = [
+            "what",
+            "which",
+            "show",
+            "list",
+            "tell me",
+            "do i have",
+            "what's",
+            "whats"
+        ]
+
+        let hasCreateSignal = createSignals.contains { lower.contains($0) }
+        let hasReadSignal = readSignals.contains { lower.contains($0) }
+
+        if trelloSignals.contains(where: { lower.contains($0) }) &&
+            (hasCreateSignal || hasReadSignal) {
+            return true
+        }
+
+        guard hasCreateSignal || hasReadSignal else {
+            return false
+        }
+
+        let normalizedCommand = normalize(lower)
+        let boardSummaries = await trelloService.boardSummaries()
+        let liveListNames = boardSummaries
+            .flatMap(\.lists)
+            .map { normalize($0.name) }
+        let liveBoardNames = boardSummaries
+            .map { normalize($0.board.name) }
+
+        return liveListNames.contains { listName in
+            !listName.isEmpty && normalizedCommand.contains(listName)
+        } || liveBoardNames.contains { boardName in
+            !boardName.isEmpty && normalizedCommand.contains(boardName)
+        }
+    }
+
+    private func normalize(_ text: String) -> String {
+        text
+            .lowercased()
+            .replacingOccurrences(
+                of: #"[^a-z0-9]+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .replacingOccurrences(
+                of: #"\s+"#,
+                with: " ",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func handleCalendarIntent(_ command: String) async -> String? {
