@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Odin needs Calendar access to check your schedule and add events you request.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Odin needs Calendar access to check your schedule and add events you request.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
