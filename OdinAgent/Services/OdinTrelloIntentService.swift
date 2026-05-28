@@ -20,6 +20,65 @@ final class OdinTrelloIntentService {
 
     private let ollamaService = OdinOllamaService()
 
+    func parseRuleBased(_ command: String) -> OdinParsedTrelloIntent? {
+        let lower = command.lowercased()
+
+        guard lower.contains("add a task") ||
+              lower.contains("add task") else {
+            return nil
+        }
+
+        let listAliases: [String: String] = [
+            "today's highest priority": "today's highest priority",
+            "todays highest priority": "today's highest priority",
+            "today highest priority": "today's highest priority",
+            "highest priority": "today's highest priority",
+            "in progress": "in progress",
+            "progress": "in progress",
+            "upcoming priorities": "upcoming priorities",
+            "upcoming priority": "upcoming priorities",
+            "upcoming": "upcoming priorities",
+            "future consideration": "future consideration",
+            "future": "future consideration",
+            "blocked": "blocked"
+        ]
+
+        var listName = "today's highest priority"
+
+        for alias in listAliases.keys.sorted(by: { $0.count > $1.count }) {
+            if lower.contains(alias) {
+                listName = listAliases[alias] ?? listName
+                break
+            }
+        }
+
+        let titleMarkers = [
+            "the task is",
+            "task is",
+            "called",
+            "named",
+            "to do",
+            "todo"
+        ]
+
+        for marker in titleMarkers {
+            if let range = command.range(of: marker, options: .caseInsensitive) {
+                let title = command[range.upperBound...]
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "\"'., "))
+
+                if !title.isEmpty {
+                    return .addTask(
+                        title: String(title),
+                        listName: listName
+                    )
+                }
+            }
+        }
+
+        return nil
+    }
+
     func parse(
         _ command: String,
         availableLists: [OdinTrelloList],
