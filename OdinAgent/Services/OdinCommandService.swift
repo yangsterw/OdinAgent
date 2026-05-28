@@ -13,6 +13,7 @@ final class OdinCommandService {
     private let trelloIntentService = OdinTrelloIntentService()
     private let calendarService = OdinCalendarService()
     private let calendarIntentService = OdinCalendarIntentService()
+    private let pendingActionService = OdinPendingActionService()
     
     private let bundleIDs: [String: String] = [
         "Spotify": "com.spotify.client",
@@ -92,6 +93,10 @@ final class OdinCommandService {
     func handle(_ command: String) async -> String? {
         let lower = command.lowercased()
 
+        if let pendingResponse = await handlePendingAction(command) {
+            return pendingResponse
+        }
+
         if await shouldTryTrelloIntentParser(lower),
            let intentResponse = await handleTrelloIntent(command) {
             return intentResponse
@@ -130,11 +135,16 @@ final class OdinCommandService {
         }
 
         if let eventRequest = parseCalendarEvent(command) {
-            return await calendarService.addEvent(
-                title: eventRequest.title,
-                startDate: eventRequest.startDate,
-                duration: eventRequest.duration
+            pendingActionService.set(
+                .calendarCreateConfirmation(
+                    title: eventRequest.title,
+                    startDate: eventRequest.startDate,
+                    duration: eventRequest.duration,
+                    createdAt: Date()
+                )
             )
+
+            return "Should I add \(eventRequest.title) to your calendar for \(formatCalendarConfirmationTime(eventRequest.startDate))?"
         }
 
         if lower.contains("open spotify") {
@@ -231,6 +241,61 @@ final class OdinCommandService {
         return nil
     }
 
+    private func handlePendingAction(_ command: String) async -> String? {
+        guard let pendingAction = pendingActionService.current() else {
+            return nil
+        }
+
+        let lower = command.lowercased()
+
+        if isCancelResponse(lower) {
+            pendingActionService.clear()
+            return "Okay. I cancelled that."
+        }
+
+        switch pendingAction {
+        case .calendarCreateConfirmation(let title, let startDate, let duration, _):
+            if isYesResponse(lower) {
+                pendingActionService.clear()
+                return await calendarService.addEvent(
+                    title: title,
+                    startDate: startDate,
+                    duration: duration
+                )
+            }
+
+            if isNoResponse(lower) {
+                pendingActionService.clear()
+                return "Okay. I did not add that calendar event."
+            }
+
+            return "Should I add \(title) to your calendar for \(formatCalendarConfirmationTime(startDate))?"
+
+        case .calendarClarification(let originalCommand, _):
+            let combinedCommand = """
+            Previous incomplete calendar command: \(originalCommand)
+            User follow-up: \(command)
+            """
+
+            guard let intent = await calendarIntentService.parse(combinedCommand) else {
+                return nil
+            }
+
+            return await handleCalendarIntentResult(
+                intent,
+                originalCommand: combinedCommand
+            )
+
+        case .trelloClarification(let originalCommand, _):
+            let combinedCommand = """
+            Previous incomplete Trello command: \(originalCommand)
+            User follow-up: \(command)
+            """
+
+            return await handleTrelloIntent(combinedCommand)
+        }
+    }
+
     private func handleTrelloIntent(_ command: String) async -> String? {
         let availableLists = await trelloService.availableLists()
         let boardSummaries = await trelloService.boardSummaries()
@@ -249,18 +314,27 @@ final class OdinCommandService {
             return nil
 
         case .clarify(let question):
+            pendingActionService.set(
+                .trelloClarification(
+                    originalCommand: command,
+                    createdAt: Date()
+                )
+            )
             return question
 
         case .showBoardsAndColumns:
+            pendingActionService.clear()
             return await trelloService.boardsAndColumnsSummary()
 
         case .showTasks(let listName, let boardName):
+            pendingActionService.clear()
             return await trelloService.tasks(
                 inList: listName,
                 onBoard: boardName
             )
 
         case .addTask(let title, let listName):
+            pendingActionService.clear()
             return await trelloService.addTask(
                 title: title,
                 toList: listName
@@ -352,14 +426,33 @@ final class OdinCommandService {
             return nil
         }
 
+        return await handleCalendarIntentResult(
+            intent,
+            originalCommand: command
+        )
+    }
+
+    private func handleCalendarIntentResult(
+        _ intent: OdinParsedCalendarIntent,
+        originalCommand: String
+    ) async -> String? {
+
         switch intent {
         case .none:
             return nil
 
         case .clarify(let question):
+            pendingActionService.set(
+                .calendarClarification(
+                    originalCommand: originalCommand,
+                    createdAt: Date()
+                )
+            )
             return question
 
         case .read(let range):
+            pendingActionService.clear()
+
             switch range {
             case .today:
                 return await calendarService.todaysSchedule()
@@ -378,12 +471,77 @@ final class OdinCommandService {
             }
 
         case .create(let title, let startDate, let duration):
-            return await calendarService.addEvent(
-                title: title,
-                startDate: startDate,
-                duration: duration
+            pendingActionService.set(
+                .calendarCreateConfirmation(
+                    title: title,
+                    startDate: startDate,
+                    duration: duration,
+                    createdAt: Date()
+                )
             )
+
+            return "Should I add \(title) to your calendar for \(formatCalendarConfirmationTime(startDate))?"
         }
+    }
+
+    private func isYesResponse(_ lower: String) -> Bool {
+        let trimmed = lower.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let exactMatches = [
+            "yes",
+            "yeah",
+            "yep",
+            "sure",
+            "confirm",
+            "do it",
+            "please do",
+            "go ahead",
+            "that's right",
+            "thats right"
+        ]
+
+        return exactMatches.contains(trimmed) ||
+            trimmed.hasPrefix("yes ") ||
+            trimmed.hasPrefix("yeah ") ||
+            trimmed.hasPrefix("yep ")
+    }
+
+    private func isNoResponse(_ lower: String) -> Bool {
+        let trimmed = lower.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let exactMatches = [
+            "no",
+            "nope",
+            "don't",
+            "dont",
+            "do not",
+            "not now",
+            "never mind",
+            "nevermind"
+        ]
+
+        return exactMatches.contains(trimmed) ||
+            trimmed.hasPrefix("no ") ||
+            trimmed.hasPrefix("nope ")
+    }
+
+    private func isCancelResponse(_ lower: String) -> Bool {
+        let trimmed = lower.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return [
+            "cancel",
+            "stop",
+            "forget it",
+            "never mind",
+            "nevermind"
+        ].contains(trimmed)
+    }
+
+    private func formatCalendarConfirmationTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 
     private func shouldTryCalendarIntentParser(_ lower: String) -> Bool {

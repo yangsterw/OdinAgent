@@ -98,6 +98,7 @@ final class OdinCalendarIntentService {
         - If a create request is missing a title, date, or specific time, return clarify with a short question.
         - Use 30 minutes when a create request has no duration.
         - Cap weekCount at 8.
+        - If the command includes "Previous incomplete calendar command" and "User follow-up", combine them into one calendar request.
 
         Examples:
         User: what's my week looking like
@@ -114,6 +115,10 @@ final class OdinCalendarIntentService {
 
         User: schedule planning tomorrow afternoon
         {"intent":"clarify","question":"What time tomorrow should I schedule planning?"}
+
+        User: Previous incomplete calendar command: schedule planning tomorrow
+        User follow-up: 3 pm
+        {"intent":"create","title":"Planning","startDateTime":"\(formatter.string(from: tomorrowAtThree))","durationMinutes":30}
 
         User command:
         \(command)

@@ -108,6 +108,7 @@ final class OdinTrelloIntentService {
         - The listName must be exactly one of the allowed Trello lists.
         - Match the user's wording to the closest allowed list name.
         - Prefer exact list names when the user names a board column.
+        - If the command includes "Previous incomplete Trello command" and "User follow-up", combine them into one Trello request.
 
         Examples:
         User: add follow up with Alex to Trello
@@ -133,6 +134,10 @@ final class OdinTrelloIntentService {
 
         User: add a Trello task
         {"intent":"clarify","question":"What should I name the Trello task?"}
+
+        User: Previous incomplete Trello command: add a Trello task
+        User follow-up: Fix the login bug
+        {"intent":"add_task","title":"Fix the login bug","listName":"\(defaultListName)"}
 
         User command:
         \(command)
