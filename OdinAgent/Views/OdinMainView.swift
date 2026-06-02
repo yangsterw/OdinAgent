@@ -24,7 +24,7 @@ struct OdinMainView: View {
     @State private var latestResponse = ""
     @State private var typedCommand = ""
     @State private var isHoveringOdin = false
-    @State private var isNightMode = false
+    @State private var isNightMode = OdinTheme.defaultIsNightMode
     @State private var currentBrainTask: Task<Void, Never>?
     @FocusState private var isCommandFieldFocused: Bool
 
@@ -367,6 +367,9 @@ private struct SpeechBubbleShape: Shape {
 }
 
 private struct OdinTheme {
+    private static let dayStartHour = 7
+    private static let nightStartHour = 19
+
     let windowBackground: Color
     let bubbleBackground: Color
     let commandBarBackground: Color
@@ -375,6 +378,12 @@ private struct OdinTheme {
     let primaryText: Color
     let scrollRail: Color
     let shadow: Color
+
+    static var defaultIsNightMode: Bool {
+        let hour = Calendar.current.component(.hour, from: Date())
+
+        return hour < dayStartHour || hour >= nightStartHour
+    }
 
     static let day = OdinTheme(
         windowBackground: Color(red: 0.95, green: 0.94, blue: 0.91),
