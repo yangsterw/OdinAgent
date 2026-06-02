@@ -12,6 +12,6 @@ struct OdinAgentApp: App {
                     NSApp.activate(ignoringOtherApps: true)
                 }
         }
-        .defaultSize(width: 420, height: 520)
+        .defaultSize(width: 380, height: 540)
     }
 }
