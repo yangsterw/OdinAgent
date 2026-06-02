@@ -157,7 +157,14 @@ struct OdinMainView: View {
 
         currentBrainTask?.cancel()
         currentBrainTask = Task {
-            let response = await brainService.respond(to: command)
+            let response = await brainService.respond(
+                to: command,
+                onPartialResponse: { partialResponse in
+                    await MainActor.run {
+                        latestResponse = partialResponse
+                    }
+                }
+            )
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 latestResponse = response
