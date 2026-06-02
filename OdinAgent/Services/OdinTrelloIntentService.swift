@@ -19,64 +19,281 @@ final class OdinTrelloIntentService {
     }
 
     private let ollamaService = OdinOllamaService()
+    private let defaultRuleBasedListName = "today's highest priority"
+
+    private let listAliases: [String: String] = [
+        "today's highest priority": "today's highest priority",
+        "todays highest priority": "today's highest priority",
+        "today highest priority": "today's highest priority",
+        "highest priority": "today's highest priority",
+        "in progress": "in progress",
+        "upcoming priorities": "upcoming priorities",
+        "upcoming priority": "upcoming priorities",
+        "upcoming": "upcoming priorities",
+        "future consideration": "future consideration",
+        "future": "future consideration",
+        "blocked": "blocked"
+    ]
+
+    private let createTaskPhrases = [
+        "add a trello task",
+        "add trello task",
+        "add a task",
+        "add task",
+        "create a trello task",
+        "create trello task",
+        "create a task",
+        "create task",
+        "make a trello task",
+        "make trello task",
+        "make a task",
+        "make task",
+        "add a trello card",
+        "add trello card",
+        "add a card",
+        "add card",
+        "create a trello card",
+        "create trello card",
+        "create a card",
+        "create card"
+    ]
+
+    private let titleMarkers = [
+        "that i need to",
+        "that i should",
+        "that i am",
+        "that i'm",
+        "that im",
+        "the task is",
+        "task is",
+        "called",
+        "named",
+        "to do",
+        "todo",
+        "about",
+        "for",
+        "that"
+    ]
+
+    private let titleTrimCharacters =
+        CharacterSet(charactersIn: "\"'.,!? \n\t")
 
     func parseRuleBased(_ command: String) -> OdinParsedTrelloIntent? {
         let lower = command.lowercased()
 
-        guard lower.contains("add a task") ||
-              lower.contains("add task") else {
+        guard isCreateTaskCommand(lower) else {
             return nil
         }
 
-        let listAliases: [String: String] = [
-            "today's highest priority": "today's highest priority",
-            "todays highest priority": "today's highest priority",
-            "today highest priority": "today's highest priority",
-            "highest priority": "today's highest priority",
-            "in progress": "in progress",
-            "progress": "in progress",
-            "upcoming priorities": "upcoming priorities",
-            "upcoming priority": "upcoming priorities",
-            "upcoming": "upcoming priorities",
-            "future consideration": "future consideration",
-            "future": "future consideration",
-            "blocked": "blocked"
-        ]
+        if let followUpTitle = extractUserFollowUp(from: command) {
+            return .addTask(
+                title: followUpTitle.title,
+                listName: followUpTitle.listName ?? defaultRuleBasedListName
+            )
+        }
 
-        var listName = "today's highest priority"
+        guard let rawTitle = extractTaskTitle(from: command) else {
+            return nil
+        }
 
-        for alias in listAliases.keys.sorted(by: { $0.count > $1.count }) {
-            if lower.contains(alias) {
-                listName = listAliases[alias] ?? listName
-                break
+        let parsedTitle = cleanTaskTitle(rawTitle)
+
+        guard !parsedTitle.title.isEmpty else {
+            return nil
+        }
+
+        return .addTask(
+            title: parsedTitle.title,
+            listName: parsedTitle.listName ?? defaultRuleBasedListName
+        )
+    }
+
+    private func isCreateTaskCommand(_ lower: String) -> Bool {
+        createTaskPhrases.contains { lower.contains($0) }
+    }
+
+    private func extractUserFollowUp(
+        from command: String
+    ) -> (title: String, listName: String?)? {
+        guard let range = command.range(
+            of: "User follow-up:",
+            options: .caseInsensitive
+        ) else {
+            return nil
+        }
+
+        let previousCommandContext = String(command[..<range.lowerBound])
+        let contextListName = recognizedListNameAtEnd(
+            of: previousCommandContext
+        )
+        let followUp = String(command[range.upperBound...])
+        let parsedTitle = cleanTaskTitle(followUp)
+
+        guard !parsedTitle.title.isEmpty else {
+            return nil
+        }
+
+        return (
+            title: parsedTitle.title,
+            listName: parsedTitle.listName ?? contextListName
+        )
+    }
+
+    private func extractTaskTitle(from command: String) -> String? {
+        for marker in titleMarkers {
+            if let range = command.range(of: marker, options: .caseInsensitive) {
+                return String(command[range.upperBound...])
             }
         }
 
-        let titleMarkers = [
-            "the task is",
-            "task is",
-            "called",
-            "named",
-            "to do",
-            "todo"
+        for phrase in createTaskPhrases.sorted(by: { $0.count > $1.count }) {
+            if let range = command.range(of: phrase, options: .caseInsensitive) {
+                return String(command[range.upperBound...])
+            }
+        }
+
+        return nil
+    }
+
+    private func cleanTaskTitle(
+        _ rawTitle: String
+    ) -> (title: String, listName: String?) {
+        let trimmedTitle = rawTitle.trimmingCharacters(in: titleTrimCharacters)
+        let titleWithoutLeadingFillers =
+            removeLeadingTaskFillers(from: trimmedTitle)
+        let titleWithList = removeRecognizedListSuffix(
+            from: titleWithoutLeadingFillers
+        )
+
+        return (
+            title: titleWithList.title.trimmingCharacters(
+                in: titleTrimCharacters
+            ),
+            listName: titleWithList.listName
+        )
+    }
+
+    private func removeLeadingTaskFillers(from title: String) -> String {
+        var cleanedTitle = title
+
+        let leadingFillers = [
+            "that i need to ",
+            "that i should ",
+            "that i am ",
+            "that i'm ",
+            "that im ",
+            "that ",
+            "i need to ",
+            "i should ",
+            "i am ",
+            "i'm ",
+            "im ",
+            "to "
         ]
 
-        for marker in titleMarkers {
-            if let range = command.range(of: marker, options: .caseInsensitive) {
-                let title = command[range.upperBound...]
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "\"'., "))
+        for filler in leadingFillers {
+            if cleanedTitle.range(
+                of: filler,
+                options: [.caseInsensitive, .anchored]
+            ) != nil {
+                cleanedTitle.removeFirst(filler.count)
+                return cleanedTitle
+            }
+        }
 
-                if !title.isEmpty {
-                    return .addTask(
-                        title: String(title),
-                        listName: listName
-                    )
+        return cleanedTitle
+    }
+
+    private func removeRecognizedListSuffix(
+        from title: String
+    ) -> (title: String, listName: String?) {
+        let sortedAliases = listAliases.keys.sorted { $0.count > $1.count }
+
+        for alias in sortedAliases {
+            guard let listName = listAliases[alias] else {
+                continue
+            }
+
+            for suffix in listSuffixes(for: alias) {
+                guard let range = title.range(
+                    of: suffix,
+                    options: [.caseInsensitive, .backwards]
+                ) else {
+                    continue
+                }
+
+                let trailingText = title[range.upperBound...]
+                    .trimmingCharacters(in: titleTrimCharacters)
+
+                guard trailingText.isEmpty else {
+                    continue
+                }
+
+                let titleWithoutSuffix = String(title[..<range.lowerBound])
+                    .trimmingCharacters(in: titleTrimCharacters)
+
+                guard !titleWithoutSuffix.isEmpty else {
+                    continue
+                }
+
+                return (title: titleWithoutSuffix, listName: listName)
+            }
+        }
+
+        return (title: title, listName: nil)
+    }
+
+    private func recognizedListNameAtEnd(of text: String) -> String? {
+        let sortedAliases = listAliases.keys.sorted { $0.count > $1.count }
+
+        for alias in sortedAliases {
+            guard let listName = listAliases[alias] else {
+                continue
+            }
+
+            for suffix in listSuffixes(for: alias) {
+                guard let range = text.range(
+                    of: suffix,
+                    options: [.caseInsensitive, .backwards]
+                ) else {
+                    continue
+                }
+
+                let trailingText = text[range.upperBound...]
+                    .trimmingCharacters(in: titleTrimCharacters)
+
+                if trailingText.isEmpty {
+                    return listName
                 }
             }
         }
 
         return nil
+    }
+
+    private func listSuffixes(for alias: String) -> [String] {
+        let connectors = [
+            "to",
+            "in",
+            "on",
+            "into",
+            "under"
+        ]
+
+        let targets = [
+            alias,
+            "the \(alias)",
+            "\(alias) column",
+            "the \(alias) column",
+            "\(alias) list",
+            "the \(alias) list"
+        ]
+
+        return connectors.flatMap { connector in
+            targets.map { target in
+                " \(connector) \(target)"
+            }
+        }
     }
 
     func parse(
@@ -163,6 +380,8 @@ final class OdinTrelloIntentService {
         - For show_tasks, listName must be exactly one of the shown column names.
         - For show_tasks, include boardName only when the user names a board.
         - If the task title is missing or unclear, return clarify with a short question.
+        - For phrases like "add a task that I am making pizza", use the text after "that I am" as the task title.
+        - For phrases like "add a task that I need to buy flour", use the text after "that I need to" as the task title.
         - If the Trello list is missing, use "\(defaultListName)".
         - The listName must be exactly one of the allowed Trello lists.
         - Match the user's wording to the closest allowed list name.
@@ -172,6 +391,12 @@ final class OdinTrelloIntentService {
         Examples:
         User: add follow up with Alex to Trello
         {"intent":"add_task","title":"Follow up with Alex","listName":"\(defaultListName)"}
+
+        User: add a task that I am making pizza
+        {"intent":"add_task","title":"Making pizza","listName":"\(defaultListName)"}
+
+        User: add a task that I need to buy flour
+        {"intent":"add_task","title":"Buy flour","listName":"\(defaultListName)"}
 
         User: what Trello boards and columns do I have
         {"intent":"show_boards_and_columns"}

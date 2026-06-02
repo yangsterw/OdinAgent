@@ -79,6 +79,60 @@ struct OdinAgentTests {
         #expect(trelloParser.llmParseCallCount == 0)
     }
 
+    @Test func parsesNaturalTrelloTaskTitleLocally() async throws {
+        let parser = OdinTrelloIntentService()
+
+        let intent = parser.parseRuleBased(
+            "add a task that i am making pizza"
+        )
+
+        guard let intent,
+              case .addTask(let title, let listName) = intent else {
+            Issue.record("Expected Trello add-task intent.")
+            return
+        }
+
+        #expect(title == "making pizza")
+        #expect(listName == "today's highest priority")
+    }
+
+    @Test func parsesTrelloTaskTitleAndListSuffixLocally() async throws {
+        let parser = OdinTrelloIntentService()
+
+        let intent = parser.parseRuleBased(
+            "add a task called Review logs to blocked"
+        )
+
+        guard let intent,
+              case .addTask(let title, let listName) = intent else {
+            Issue.record("Expected Trello add-task intent.")
+            return
+        }
+
+        #expect(title == "Review logs")
+        #expect(listName == "blocked")
+    }
+
+    @Test func parsesTrelloClarificationFollowUpLocally() async throws {
+        let parser = OdinTrelloIntentService()
+
+        let intent = parser.parseRuleBased(
+            """
+            Previous incomplete Trello command: add a Trello task to blocked
+            User follow-up: Fix the login bug
+            """
+        )
+
+        guard let intent,
+              case .addTask(let title, let listName) = intent else {
+            Issue.record("Expected Trello add-task intent.")
+            return
+        }
+
+        #expect(title == "Fix the login bug")
+        #expect(listName == "blocked")
+    }
+
     @Test func routesTrelloLLMIntentWithBoardContext() async throws {
         let board = OdinTrelloBoard(id: "board-1", name: "Work")
         let list = OdinTrelloList(
