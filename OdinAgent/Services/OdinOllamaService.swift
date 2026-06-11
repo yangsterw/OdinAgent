@@ -178,3 +178,20 @@ final class OdinOllamaService {
         return try JSONDecoder().decode(ModelsResponse.self, from: data).models
     }
 }
+
+protocol OdinLanguageModelServicing {
+    func generateResponse(
+        for prompt: String,
+        modelName: String
+    ) async throws -> String
+
+    func streamResponse(
+        for prompt: String,
+        modelName: String,
+        onPartialResponse: @escaping (String) async -> Void
+    ) async throws -> String
+
+    func availableModels() async throws -> [OdinOllamaService.OllamaModel]
+}
+
+extension OdinOllamaService: OdinLanguageModelServicing {}

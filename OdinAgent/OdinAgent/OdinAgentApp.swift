@@ -3,10 +3,11 @@ import SwiftUI
 @main
 struct OdinAgentApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    private let dependencies = OdinDependencyContainer.live
 
     var body: some Scene {
         Window("Odin", id: "main") {
-            OdinMainView()
+            OdinMainView(dependencies: dependencies)
                 .onOpenURL { url in
                     print("Opened from URL:", url)
                     NSApp.activate(ignoringOtherApps: true)

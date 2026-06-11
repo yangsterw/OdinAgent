@@ -1,6 +1,20 @@
 import Foundation
 import EventKit
 
+protocol OdinCalendarManaging {
+    func todaysSchedule() async -> String
+    func tomorrowsSchedule() async -> String
+    func thisWeeksSchedule() async -> String
+    func nextWeeksSchedule() async -> String
+    func upcomingWeeksSchedule(_ weekCount: Int) async -> String
+
+    func addEvent(
+        title: String,
+        startDate: Date,
+        duration: TimeInterval
+    ) async -> String
+}
+
 final class OdinCalendarService {
 
     private let eventStore = EKEventStore()
@@ -228,3 +242,5 @@ final class OdinCalendarService {
         return formatter.string(from: date)
     }
 }
+
+extension OdinCalendarService: OdinCalendarManaging {}

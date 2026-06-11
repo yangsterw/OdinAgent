@@ -25,6 +25,20 @@ struct OdinTrelloBoardSummary {
     let lists: [OdinTrelloList]
 }
 
+protocol OdinTrelloManaging: OdinTrelloRoutingDataSource {
+    func boardsAndColumnsSummary() async -> String
+
+    func tasks(
+        inList listName: String,
+        onBoard boardName: String?
+    ) async -> String
+
+    func addTask(
+        title: String,
+        toList listName: String
+    ) async -> String
+}
+
 final class OdinTrelloService {
 
     private let apiKey = Secrets.trelloAPIKey

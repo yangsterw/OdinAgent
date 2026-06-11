@@ -6,6 +6,12 @@ enum OdinPendingAction {
     case trelloClarification(originalCommand: String, createdAt: Date)
 }
 
+protocol OdinPendingActionManaging {
+    func set(_ action: OdinPendingAction)
+    func clear()
+    func current() -> OdinPendingAction?
+}
+
 final class OdinPendingActionService {
 
     private let timeout: TimeInterval = 5 * 60
@@ -45,3 +51,5 @@ final class OdinPendingActionService {
         return Date().timeIntervalSince(createdAt) > timeout
     }
 }
+
+extension OdinPendingActionService: OdinPendingActionManaging {}

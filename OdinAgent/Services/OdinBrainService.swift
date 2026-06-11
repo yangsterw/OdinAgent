@@ -1,19 +1,35 @@
 import Foundation
 
+protocol OdinBrainResponding {
+    func respond(
+        to command: String,
+        modelName: String,
+        onPartialResponse: @escaping (String) async -> Void
+    ) async -> String
+}
+
 final class OdinBrainService {
     private static let maxPromptMemoryCharacters = 4_000
 
-    private let ollamaService =
-        OdinOllamaService()
+    private let ollamaService: any OdinLanguageModelServicing
 
-    private let memoryService =
-        OdinMemoryService()
+    private let memoryService: OdinMemoryService
 
-    private let commandService =
-        OdinCommandService()
+    private let commandService: any OdinCommandHandling
 
-    private let conversationService =
-        OdinConversationService()
+    private let conversationService: OdinConversationService
+
+    init(
+        ollamaService: any OdinLanguageModelServicing = OdinOllamaService(),
+        memoryService: OdinMemoryService = OdinMemoryService(),
+        commandService: any OdinCommandHandling = OdinCommandService(),
+        conversationService: OdinConversationService = OdinConversationService()
+    ) {
+        self.ollamaService = ollamaService
+        self.memoryService = memoryService
+        self.commandService = commandService
+        self.conversationService = conversationService
+    }
 
     private func recordAndReturn(_ user: String, _ odin: String) async -> String {
         await conversationService.addUserMessage(user)
@@ -123,3 +139,5 @@ final class OdinBrainService {
         }
     }
 }
+
+extension OdinBrainService: OdinBrainResponding {}

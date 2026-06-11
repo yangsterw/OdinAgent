@@ -8,13 +8,19 @@
 import Foundation
 import AppKit
 
+protocol OdinCommandHandling {
+    func handle(
+        _ command: String,
+        modelName: String
+    ) async -> String?
+}
+
 final class OdinCommandService {
-    private let trelloService = OdinTrelloService()
-    private let trelloIntentService = OdinTrelloIntentService()
-    private let calendarService = OdinCalendarService()
-    private let calendarIntentService = OdinCalendarIntentService()
-    private let pendingActionService = OdinPendingActionService()
-    private let intentRouterService: OdinIntentRouterService
+    private let trelloService: any OdinTrelloManaging
+    private let calendarService: any OdinCalendarManaging
+    private let calendarIntentService: any OdinCalendarIntentParsing
+    private let pendingActionService: any OdinPendingActionManaging
+    private let intentRouterService: any OdinIntentRouting
 
     private let bundleIDs: [String: String] = [
         "Spotify": "com.spotify.client",
@@ -25,8 +31,19 @@ final class OdinCommandService {
         "Microsoft Outlook": "com.microsoft.Outlook"
     ]
 
-    init() {
-        intentRouterService = OdinIntentRouterService(
+    init(
+        trelloService: any OdinTrelloManaging = OdinTrelloService(),
+        trelloIntentService: any OdinTrelloIntentParsing = OdinTrelloIntentService(),
+        calendarService: any OdinCalendarManaging = OdinCalendarService(),
+        calendarIntentService: any OdinCalendarIntentParsing = OdinCalendarIntentService(),
+        pendingActionService: any OdinPendingActionManaging = OdinPendingActionService(),
+        intentRouterService: (any OdinIntentRouting)? = nil
+    ) {
+        self.trelloService = trelloService
+        self.calendarService = calendarService
+        self.calendarIntentService = calendarIntentService
+        self.pendingActionService = pendingActionService
+        self.intentRouterService = intentRouterService ?? OdinIntentRouterService(
             trelloService: trelloService,
             trelloIntentService: trelloIntentService,
             calendarIntentService: calendarIntentService
@@ -353,3 +370,5 @@ final class OdinCommandService {
         }
     }
 }
+
+extension OdinCommandService: OdinCommandHandling {}

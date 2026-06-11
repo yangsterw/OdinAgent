@@ -11,10 +11,14 @@ final class OdinViewModel: ObservableObject {
     @Published var latestTranscript: String = ""
 
     private var soundService: SoundListeningService
-    private let animatorService = DogPhonemeAnimatorService()
+    private let animatorService: DogPhonemeAnimatorService
 
-    init(soundService: SoundListeningService? = nil) {
+    init(
+        soundService: SoundListeningService? = nil,
+        animatorService: DogPhonemeAnimatorService = DogPhonemeAnimatorService()
+    ) {
         self.soundService = soundService ?? WhisperSoundListeningService()
+        self.animatorService = animatorService
         
         self.soundService.onTranscript = { [weak self] transcript in
             Task { @MainActor in

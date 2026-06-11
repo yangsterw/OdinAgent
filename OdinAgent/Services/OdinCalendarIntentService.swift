@@ -27,7 +27,13 @@ final class OdinCalendarIntentService {
         let question: String?
     }
 
-    private let ollamaService = OdinOllamaService()
+    private let ollamaService: any OdinLanguageModelServicing
+
+    init(
+        ollamaService: any OdinLanguageModelServicing = OdinOllamaService()
+    ) {
+        self.ollamaService = ollamaService
+    }
 
     func parseRuleBased(_ command: String) -> OdinParsedCalendarIntent? {
         let lower = command.lowercased()

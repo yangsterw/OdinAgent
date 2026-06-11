@@ -2,26 +2,19 @@ import SwiftUI
 
 struct OdinMainView: View {
 
-    @StateObject private var idleAnimationService =
-        DogIdleAnimationService()
+    @StateObject private var idleAnimationService: DogIdleAnimationService
 
-    @StateObject private var speechService =
-        OdinSpeechService()
+    @StateObject private var speechService: OdinSpeechService
 
-    @StateObject private var mouthAnimationService =
-        DogMouthAnimationService()
+    @StateObject private var mouthAnimationService: DogMouthAnimationService
 
-    @StateObject private var whisperService =
-        WhisperSoundListeningService()
+    @StateObject private var whisperService: WhisperSoundListeningService
 
-    private let phonemeService =
-        DogPhonemeAnimatorService()
+    private let phonemeService: DogPhonemeAnimatorService
 
-    private let brainService =
-        OdinBrainService()
+    private let brainService: any OdinBrainResponding
 
-    private let ollamaService =
-        OdinOllamaService()
+    private let ollamaService: any OdinLanguageModelServicing
 
     @State private var odinState = "Idle"
     @State private var latestResponse = ""
@@ -36,6 +29,24 @@ struct OdinMainView: View {
 
     private var theme: OdinTheme {
         isNightMode ? .night : .day
+    }
+
+    init(dependencies: OdinDependencyContainer = .live) {
+        _idleAnimationService = StateObject(
+            wrappedValue: dependencies.idleAnimationService
+        )
+        _speechService = StateObject(
+            wrappedValue: dependencies.speechService
+        )
+        _mouthAnimationService = StateObject(
+            wrappedValue: dependencies.mouthAnimationService
+        )
+        _whisperService = StateObject(
+            wrappedValue: dependencies.whisperService
+        )
+        phonemeService = dependencies.phonemeService
+        brainService = dependencies.brainService
+        ollamaService = dependencies.ollamaService
     }
 
     var body: some View {

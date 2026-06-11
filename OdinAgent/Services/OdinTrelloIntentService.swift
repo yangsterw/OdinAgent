@@ -18,8 +18,14 @@ final class OdinTrelloIntentService {
         let question: String?
     }
 
-    private let ollamaService = OdinOllamaService()
+    private let ollamaService: any OdinLanguageModelServicing
     private let defaultRuleBasedListName = "today's highest priority"
+
+    init(
+        ollamaService: any OdinLanguageModelServicing = OdinOllamaService()
+    ) {
+        self.ollamaService = ollamaService
+    }
 
     private let listAliases: [String: String] = [
         "today's highest priority": "today's highest priority",

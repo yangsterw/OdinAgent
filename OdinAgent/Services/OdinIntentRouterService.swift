@@ -37,6 +37,13 @@ enum OdinRoutedIntent {
     case trello(OdinParsedTrelloIntent, originalCommand: String)
 }
 
+protocol OdinIntentRouting {
+    func route(
+        _ command: String,
+        modelName: String
+    ) async -> OdinRoutedIntent
+}
+
 final class OdinIntentRouterService {
 
     private let trelloService: any OdinTrelloRoutingDataSource
@@ -277,7 +284,8 @@ final class OdinIntentRouterService {
     }
 }
 
-extension OdinTrelloService: OdinTrelloRoutingDataSource {}
+extension OdinIntentRouterService: OdinIntentRouting {}
+extension OdinTrelloService: OdinTrelloManaging {}
 extension OdinTrelloIntentService: OdinTrelloIntentParsing {}
 extension OdinCalendarIntentService: OdinCalendarIntentParsing {}
 
