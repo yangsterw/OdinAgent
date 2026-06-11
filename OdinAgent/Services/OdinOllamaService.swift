@@ -1,10 +1,49 @@
 import Foundation
 
 final class OdinOllamaService {
+    nonisolated static let preferredModelName = "gemma4:31b-it-qat"
+    nonisolated static let defaultContextWindow = 16_384
+
+    private let session: URLSession
+
+    init(session: URLSession = OdinOllamaService.makeSession()) {
+        self.session = session
+    }
+
+    private static func makeSession() -> URLSession {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 600
+        configuration.timeoutIntervalForResource = 1_800
+
+        return URLSession(configuration: configuration)
+    }
+
     private struct GenerateRequest: Encodable {
         let model: String
         let prompt: String
         let stream: Bool
+        let think: Bool
+        let options: GenerateOptions
+    }
+
+    private struct GenerateOptions: Encodable {
+        let numCtx: Int
+
+        enum CodingKeys: String, CodingKey {
+            case numCtx = "num_ctx"
+        }
+    }
+
+    private struct ModelsResponse: Decodable {
+        let models: [OllamaModel]
+    }
+
+    struct OllamaModel: Decodable, Identifiable {
+        let name: String
+
+        var id: String {
+            name
+        }
     }
 
     private struct GenerateResponse: Decodable {
@@ -17,7 +56,8 @@ final class OdinOllamaService {
     }
 
     func generateResponse(
-        for prompt: String
+        for prompt: String,
+        modelName: String = OdinOllamaService.preferredModelName
     ) async throws -> String {
 
         guard let url = URL(
@@ -27,9 +67,13 @@ final class OdinOllamaService {
         }
 
         let requestBody = GenerateRequest(
-            model: "llama3.2:3b",
+            model: modelName,
             prompt: prompt,
-            stream: false
+            stream: false,
+            think: false,
+            options: GenerateOptions(
+                numCtx: Self.defaultContextWindow
+            )
         )
         let jsonData = try JSONEncoder().encode(requestBody)
 
@@ -41,7 +85,7 @@ final class OdinOllamaService {
         )
         request.httpBody = jsonData
 
-        let (data, response) = try await URLSession.shared.data(
+        let (data, response) = try await session.data(
             for: request
         )
         guard let http = response as? HTTPURLResponse,
@@ -55,6 +99,7 @@ final class OdinOllamaService {
 
     func streamResponse(
         for prompt: String,
+        modelName: String = OdinOllamaService.preferredModelName,
         onPartialResponse: @escaping (String) async -> Void
     ) async throws -> String {
 
@@ -65,9 +110,13 @@ final class OdinOllamaService {
         }
 
         let requestBody = GenerateRequest(
-            model: "llama3.2:3b",
+            model: modelName,
             prompt: prompt,
-            stream: true
+            stream: true,
+            think: false,
+            options: GenerateOptions(
+                numCtx: Self.defaultContextWindow
+            )
         )
         let jsonData = try JSONEncoder().encode(requestBody)
 
@@ -79,7 +128,7 @@ final class OdinOllamaService {
         )
         request.httpBody = jsonData
 
-        let (bytes, response) = try await URLSession.shared.bytes(
+        let (bytes, response) = try await session.bytes(
             for: request
         )
         guard let http = response as? HTTPURLResponse,
@@ -111,5 +160,21 @@ final class OdinOllamaService {
         }
 
         return fullResponse.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func availableModels() async throws -> [OllamaModel] {
+        guard let url = URL(
+            string: "http://127.0.0.1:11434/api/tags"
+        ) else {
+            throw URLError(.badURL)
+        }
+
+        let (data, response) = try await session.data(from: url)
+        guard let http = response as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(ModelsResponse.self, from: data).models
     }
 }

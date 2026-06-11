@@ -63,11 +63,17 @@ final class OdinCalendarIntentService {
         return nil
     }
 
-    func parse(_ command: String) async -> OdinParsedCalendarIntent? {
+    func parse(
+        _ command: String,
+        modelName: String = OdinOllamaService.preferredModelName
+    ) async -> OdinParsedCalendarIntent? {
         let prompt = buildPrompt(command: command)
 
         do {
-            let response = try await ollamaService.generateResponse(for: prompt)
+            let response = try await ollamaService.generateResponse(
+                for: prompt,
+                modelName: modelName
+            )
 
             guard let jsonData = extractJSONObject(from: response)
                 .data(using: .utf8) else {

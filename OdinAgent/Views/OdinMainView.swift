@@ -20,9 +20,15 @@ struct OdinMainView: View {
     private let brainService =
         OdinBrainService()
 
+    private let ollamaService =
+        OdinOllamaService()
+
     @State private var odinState = "Idle"
     @State private var latestResponse = ""
     @State private var typedCommand = ""
+    @State private var availableModels: [OdinOllamaService.OllamaModel] = []
+    @State private var selectedModelName = OdinOllamaService.preferredModelName
+    @State private var isLoadingModels = false
     @State private var isHoveringOdin = false
     @State private var isNightMode = OdinTheme.defaultIsNightMode
     @State private var currentBrainTask: Task<Void, Never>?
@@ -79,6 +85,7 @@ struct OdinMainView: View {
                 odinState = "Listening"
                 idleAnimationService.start()
             }
+            loadAvailableModels()
 
             speechService.onSpeechStarted = { spokenText in
                 Task { @MainActor in
@@ -194,6 +201,8 @@ struct OdinMainView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             commandControls
+
+            modelPicker
         }
         .padding(10)
         .frame(maxWidth: .infinity)
@@ -235,6 +244,47 @@ struct OdinMainView: View {
             )
             .help("Send")
         }
+    }
+
+    private var modelPicker: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "cpu")
+                .foregroundStyle(theme.primaryText)
+                .frame(width: 18, height: 18)
+
+            if availableModels.isEmpty {
+                Text(isLoadingModels ? "Loading Ollama models..." : "No Ollama models found")
+                    .font(.caption)
+                    .foregroundStyle(theme.primaryText.opacity(0.72))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Picker("Ollama model", selection: $selectedModelName) {
+                    ForEach(availableModels) { model in
+                        Text(model.name)
+                            .tag(model.name)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .disabled(odinState == "Thinking")
+            }
+
+            Button {
+                loadAvailableModels()
+            } label: {
+                Image(systemName: "arrow.clockwise")
+                    .foregroundStyle(theme.primaryText)
+                    .frame(width: 22, height: 22)
+            }
+            .buttonStyle(.borderless)
+            .disabled(isLoadingModels || odinState == "Thinking")
+            .help("Refresh Ollama models")
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 32)
+        .background(theme.controlBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var bubbleText: String {
@@ -304,6 +354,8 @@ struct OdinMainView: View {
     }
 
     private func handleCommand(_ command: String) {
+        let modelName = selectedModelName
+
         Task { @MainActor in
             odinState = "Thinking"
             latestResponse = "Thinking..."
@@ -313,6 +365,7 @@ struct OdinMainView: View {
         currentBrainTask = Task {
             let response = await brainService.respond(
                 to: command,
+                modelName: modelName,
                 onPartialResponse: { partialResponse in
                     await MainActor.run {
                         latestResponse = partialResponse
@@ -325,6 +378,44 @@ struct OdinMainView: View {
                 speechService.speak(response)
             }
         }
+    }
+
+    private func loadAvailableModels() {
+        guard !isLoadingModels else {
+            return
+        }
+
+        isLoadingModels = true
+
+        Task {
+            do {
+                let models = try await ollamaService.availableModels()
+
+                await MainActor.run {
+                    availableModels = models
+                    selectedModelName = defaultModelName(from: models)
+                    isLoadingModels = false
+                }
+            } catch {
+                print("Ollama model list error:", error)
+
+                await MainActor.run {
+                    availableModels = []
+                    selectedModelName = OdinOllamaService.preferredModelName
+                    isLoadingModels = false
+                }
+            }
+        }
+    }
+
+    private func defaultModelName(
+        from models: [OdinOllamaService.OllamaModel]
+    ) -> String {
+        if models.contains(where: { $0.name == OdinOllamaService.preferredModelName }) {
+            return OdinOllamaService.preferredModelName
+        }
+
+        return models.first?.name ?? OdinOllamaService.preferredModelName
     }
 }
 

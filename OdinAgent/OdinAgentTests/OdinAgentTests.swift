@@ -247,7 +247,8 @@ private final class StubTrelloIntentParser: OdinTrelloIntentParsing {
         _ command: String,
         availableLists: [OdinTrelloList],
         boardSummaries: [OdinTrelloBoardSummary],
-        defaultListName: String
+        defaultListName: String,
+        modelName: String
     ) async -> OdinParsedTrelloIntent? {
         llmParseCallCount += 1
         return llmIntent
@@ -271,7 +272,10 @@ private final class StubCalendarIntentParser: OdinCalendarIntentParsing {
         ruleBasedIntent
     }
 
-    func parse(_ command: String) async -> OdinParsedCalendarIntent? {
+    func parse(
+        _ command: String,
+        modelName: String
+    ) async -> OdinParsedCalendarIntent? {
         llmParseCallCount += 1
         return llmIntent
     }

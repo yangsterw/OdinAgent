@@ -1,6 +1,7 @@
 import Foundation
 
 final class OdinBrainService {
+    private static let maxPromptMemoryCharacters = 4_000
 
     private let ollamaService =
         OdinOllamaService()
@@ -23,6 +24,7 @@ final class OdinBrainService {
 
     func respond(
         to command: String,
+        modelName: String = OdinOllamaService.preferredModelName,
         onPartialResponse: @escaping (String) async -> Void = { _ in }
     ) async -> String {
 
@@ -55,7 +57,10 @@ final class OdinBrainService {
             return await recordAndReturn(command, response)
         }
 
-        if let commandResponse = await commandService.handle(command) {
+        if let commandResponse = await commandService.handle(
+            command,
+            modelName: modelName
+        ) {
             await onPartialResponse(commandResponse)
             return await recordAndReturn(command, commandResponse)
         }
@@ -63,6 +68,7 @@ final class OdinBrainService {
         await conversationService.addUserMessage(command)
 
         let memory = await memoryService.loadMemory()
+        let promptMemory = String(memory.suffix(Self.maxPromptMemoryCharacters))
         let recentConversation = await conversationService.contextText()
 
         let prompt = """
@@ -77,7 +83,7 @@ final class OdinBrainService {
         - do not be overly verbose
 
         Long-term memory:
-        \(memory)
+        \(promptMemory)
 
         Recent conversation:
         \(recentConversation)
@@ -92,6 +98,7 @@ final class OdinBrainService {
             let response =
                 try await ollamaService.streamResponse(
                     for: prompt,
+                    modelName: modelName,
                     onPartialResponse: onPartialResponse
                 )
 

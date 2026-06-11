@@ -33,12 +33,18 @@ final class OdinCommandService {
         )
     }
 
-    func handle(_ command: String) async -> String? {
-        if let pendingResponse = await handlePendingAction(command) {
+    func handle(
+        _ command: String,
+        modelName: String = OdinOllamaService.preferredModelName
+    ) async -> String? {
+        if let pendingResponse = await handlePendingAction(
+            command,
+            modelName: modelName
+        ) {
             return pendingResponse
         }
 
-        switch await intentRouterService.route(command) {
+        switch await intentRouterService.route(command, modelName: modelName) {
         case .none:
             return nil
 
@@ -59,7 +65,10 @@ final class OdinCommandService {
         }
     }
 
-    private func handlePendingAction(_ command: String) async -> String? {
+    private func handlePendingAction(
+        _ command: String,
+        modelName: String
+    ) async -> String? {
         guard let pendingAction = pendingActionService.current() else {
             return nil
         }
@@ -98,7 +107,10 @@ final class OdinCommandService {
             User follow-up: \(command)
             """
 
-            guard let intent = await calendarIntentService.parse(combinedCommand) else {
+            guard let intent = await calendarIntentService.parse(
+                combinedCommand,
+                modelName: modelName
+            ) else {
                 return nil
             }
 
@@ -113,7 +125,10 @@ final class OdinCommandService {
             User follow-up: \(command)
             """
 
-            switch await intentRouterService.route(combinedCommand) {
+            switch await intentRouterService.route(
+                combinedCommand,
+                modelName: modelName
+            ) {
             case .trello(let intent, let originalCommand):
                 return await handleTrelloIntent(
                     intent,

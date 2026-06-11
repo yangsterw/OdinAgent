@@ -14,13 +14,14 @@ protocol OdinTrelloIntentParsing {
         _ command: String,
         availableLists: [OdinTrelloList],
         boardSummaries: [OdinTrelloBoardSummary],
-        defaultListName: String
+        defaultListName: String,
+        modelName: String
     ) async -> OdinParsedTrelloIntent?
 }
 
 protocol OdinCalendarIntentParsing {
     func parseRuleBased(_ command: String) -> OdinParsedCalendarIntent?
-    func parse(_ command: String) async -> OdinParsedCalendarIntent?
+    func parse(_ command: String, modelName: String) async -> OdinParsedCalendarIntent?
 }
 
 enum OdinAppIntent {
@@ -52,7 +53,10 @@ final class OdinIntentRouterService {
         self.calendarIntentService = calendarIntentService
     }
 
-    func route(_ command: String) async -> OdinRoutedIntent {
+    func route(
+        _ command: String,
+        modelName: String = OdinOllamaService.preferredModelName
+    ) async -> OdinRoutedIntent {
         let lower = command.lowercased()
 
         if let appIntent = routeAppCommand(lower) {
@@ -68,13 +72,16 @@ final class OdinIntentRouterService {
         }
 
         if await shouldTryTrelloIntentParser(lower),
-           let intent = await parseTrelloIntent(command),
+           let intent = await parseTrelloIntent(command, modelName: modelName),
            !intent.isNone {
             return .trello(intent, originalCommand: command)
         }
 
         if shouldTryCalendarIntentParser(lower),
-           let intent = await calendarIntentService.parse(command),
+           let intent = await calendarIntentService.parse(
+            command,
+            modelName: modelName
+           ),
            !intent.isNone {
             return .calendar(intent, originalCommand: command)
         }
@@ -82,7 +89,10 @@ final class OdinIntentRouterService {
         return .none
     }
 
-    private func parseTrelloIntent(_ command: String) async -> OdinParsedTrelloIntent? {
+    private func parseTrelloIntent(
+        _ command: String,
+        modelName: String
+    ) async -> OdinParsedTrelloIntent? {
         let availableLists = await trelloService.availableLists()
         let boardSummaries = await trelloService.boardSummaries()
 
@@ -90,7 +100,8 @@ final class OdinIntentRouterService {
             command,
             availableLists: availableLists,
             boardSummaries: boardSummaries,
-            defaultListName: trelloService.defaultListName
+            defaultListName: trelloService.defaultListName,
+            modelName: modelName
         )
     }
 

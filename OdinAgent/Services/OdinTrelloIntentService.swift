@@ -300,7 +300,8 @@ final class OdinTrelloIntentService {
         _ command: String,
         availableLists: [OdinTrelloList],
         boardSummaries: [OdinTrelloBoardSummary],
-        defaultListName: String
+        defaultListName: String,
+        modelName: String = OdinOllamaService.preferredModelName
     ) async -> OdinParsedTrelloIntent? {
         let prompt = buildPrompt(
             command: command,
@@ -310,7 +311,10 @@ final class OdinTrelloIntentService {
         )
 
         do {
-            let response = try await ollamaService.generateResponse(for: prompt)
+            let response = try await ollamaService.generateResponse(
+                for: prompt,
+                modelName: modelName
+            )
             let jsonText = extractJSONObject(from: response)
 
             guard let jsonData = jsonText.data(using: .utf8) else {
