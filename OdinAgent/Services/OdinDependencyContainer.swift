@@ -1,6 +1,7 @@
 import Foundation
 
 struct OdinDependencyContainer {
+    let configuration: OdinAppConfiguration
     let idleAnimationService: DogIdleAnimationService
     let speechService: OdinSpeechService
     let mouthAnimationService: DogMouthAnimationService
@@ -9,11 +10,17 @@ struct OdinDependencyContainer {
     let brainService: any OdinBrainResponding
     let ollamaService: any OdinLanguageModelServicing
 
-    static let live = makeLive()
+    static let live = makeLive(configuration: .live)
 
-    private static func makeLive() -> OdinDependencyContainer {
-        let ollamaService = OdinOllamaService()
-        let trelloService = OdinTrelloService()
+    static func makeLive(
+        configuration: OdinAppConfiguration
+    ) -> OdinDependencyContainer {
+        let ollamaService = OdinOllamaService(
+            configuration: configuration.ollama
+        )
+        let trelloService = OdinTrelloService(
+            configuration: configuration.trello
+        )
         let trelloIntentService = OdinTrelloIntentService(
             ollamaService: ollamaService
         )
@@ -45,6 +52,7 @@ struct OdinDependencyContainer {
         )
 
         return OdinDependencyContainer(
+            configuration: configuration,
             idleAnimationService: DogIdleAnimationService(),
             speechService: OdinSpeechService(),
             mouthAnimationService: DogMouthAnimationService(),

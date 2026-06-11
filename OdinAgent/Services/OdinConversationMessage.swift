@@ -14,6 +14,13 @@ struct OdinConversationMessage {
     let date: Date
 }
 
+protocol OdinConversationManaging {
+    func addUserMessage(_ text: String) async
+    func addOdinMessage(_ text: String) async
+    func contextText() async -> String
+    func clear() async
+}
+
 actor OdinConversationService {
 
     private var messages: [OdinConversationMessage] = []
@@ -21,7 +28,7 @@ actor OdinConversationService {
     private let maxMessages = 8
     private let conversationTimeout: TimeInterval = 10 * 60
 
-    func addUserMessage(_ text: String) {
+    func addUserMessage(_ text: String) async {
         resetIfExpired()
 
         messages.append(
@@ -35,7 +42,7 @@ actor OdinConversationService {
         trim()
     }
 
-    func addOdinMessage(_ text: String) {
+    func addOdinMessage(_ text: String) async {
         resetIfExpired()
 
         messages.append(
@@ -49,7 +56,7 @@ actor OdinConversationService {
         trim()
     }
 
-    func contextText() -> String {
+    func contextText() async -> String {
         resetIfExpired()
 
         guard !messages.isEmpty else {
@@ -61,7 +68,7 @@ actor OdinConversationService {
             .joined(separator: "\n")
     }
 
-    func clear() {
+    func clear() async {
         messages.removeAll()
     }
 
@@ -83,3 +90,5 @@ actor OdinConversationService {
         }
     }
 }
+
+extension OdinConversationService: OdinConversationManaging {}

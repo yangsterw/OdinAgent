@@ -1,5 +1,11 @@
 import Foundation
 
+protocol OdinMemoryManaging {
+    func loadMemory() async -> String
+    func saveInteraction(user: String, odin: String) async
+    func clearMemory() async
+}
+
 actor OdinMemoryService {
 
     private let fileName = "OdinMemory.txt"
@@ -14,7 +20,7 @@ actor OdinMemoryService {
         return documents.appendingPathComponent(fileName)
     }
 
-    func loadMemory() -> String {
+    func loadMemory() async -> String {
         do {
             return try String(
                 contentsOf: memoryURL,
@@ -25,7 +31,7 @@ actor OdinMemoryService {
         }
     }
 
-    func saveInteraction(user: String, odin: String) {
+    func saveInteraction(user: String, odin: String) async {
         let timestamp = Date().formatted()
 
         let entry = """
@@ -37,7 +43,7 @@ actor OdinMemoryService {
         """
 
         do {
-            let oldMemory = loadMemory()
+            let oldMemory = await loadMemory()
             let newMemory = oldMemory + entry
             let limitedMemory = limitMemory(newMemory)
 
@@ -54,7 +60,7 @@ actor OdinMemoryService {
         }
     }
 
-    func clearMemory() {
+    func clearMemory() async {
         do {
             try "".write(
                 to: memoryURL,
@@ -78,3 +84,4 @@ actor OdinMemoryService {
     }
 }
 
+extension OdinMemoryService: OdinMemoryManaging {}

@@ -285,7 +285,6 @@ final class OdinIntentRouterService {
 }
 
 extension OdinIntentRouterService: OdinIntentRouting {}
-extension OdinTrelloService: OdinTrelloManaging {}
 extension OdinTrelloIntentService: OdinTrelloIntentParsing {}
 extension OdinCalendarIntentService: OdinCalendarIntentParsing {}
 

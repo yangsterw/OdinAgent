@@ -13,22 +13,26 @@ final class OdinBrainService {
 
     private let ollamaService: any OdinLanguageModelServicing
 
-    private let memoryService: OdinMemoryService
+    private let memoryService: any OdinMemoryManaging
 
     private let commandService: any OdinCommandHandling
 
-    private let conversationService: OdinConversationService
+    private let conversationService: any OdinConversationManaging
+
+    private let promptBuilder: any OdinBrainPromptBuilding
 
     init(
         ollamaService: any OdinLanguageModelServicing = OdinOllamaService(),
-        memoryService: OdinMemoryService = OdinMemoryService(),
+        memoryService: any OdinMemoryManaging = OdinMemoryService(),
         commandService: any OdinCommandHandling = OdinCommandService(),
-        conversationService: OdinConversationService = OdinConversationService()
+        conversationService: any OdinConversationManaging = OdinConversationService(),
+        promptBuilder: any OdinBrainPromptBuilding = OdinBrainPromptBuilder()
     ) {
         self.ollamaService = ollamaService
         self.memoryService = memoryService
         self.commandService = commandService
         self.conversationService = conversationService
+        self.promptBuilder = promptBuilder
     }
 
     private func recordAndReturn(_ user: String, _ odin: String) async -> String {
@@ -87,28 +91,11 @@ final class OdinBrainService {
         let promptMemory = String(memory.suffix(Self.maxPromptMemoryCharacters))
         let recentConversation = await conversationService.contextText()
 
-        let prompt = """
-        You are Odin, a cute male desktop dog assistant.
-
-        Personality:
-        - friendly
-        - playful
-        - concise
-        - helpful
-        - dog-like sometimes
-        - do not be overly verbose
-
-        Long-term memory:
-        \(promptMemory)
-
-        Recent conversation:
-        \(recentConversation)
-
-        Current user message:
-        \(command)
-
-        Respond as Odin:
-        """
+        let prompt = promptBuilder.buildPrompt(
+            command: command,
+            promptMemory: promptMemory,
+            recentConversation: recentConversation
+        )
 
         do {
             let response =

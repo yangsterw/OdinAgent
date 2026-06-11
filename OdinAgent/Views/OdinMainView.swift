@@ -2,51 +2,17 @@ import SwiftUI
 
 struct OdinMainView: View {
 
-    @StateObject private var idleAnimationService: DogIdleAnimationService
-
-    @StateObject private var speechService: OdinSpeechService
-
-    @StateObject private var mouthAnimationService: DogMouthAnimationService
-
-    @StateObject private var whisperService: WhisperSoundListeningService
-
-    private let phonemeService: DogPhonemeAnimatorService
-
-    private let brainService: any OdinBrainResponding
-
-    private let ollamaService: any OdinLanguageModelServicing
-
-    @State private var odinState = "Idle"
-    @State private var latestResponse = ""
-    @State private var typedCommand = ""
-    @State private var availableModels: [OdinOllamaService.OllamaModel] = []
-    @State private var selectedModelName = OdinOllamaService.preferredModelName
-    @State private var isLoadingModels = false
-    @State private var isHoveringOdin = false
-    @State private var isNightMode = OdinTheme.defaultIsNightMode
-    @State private var currentBrainTask: Task<Void, Never>?
+    @StateObject private var viewModel: OdinMainViewModel
     @FocusState private var isCommandFieldFocused: Bool
 
     private var theme: OdinTheme {
-        isNightMode ? .night : .day
+        viewModel.isNightMode ? .night : .day
     }
 
     init(dependencies: OdinDependencyContainer = .live) {
-        _idleAnimationService = StateObject(
-            wrappedValue: dependencies.idleAnimationService
+        _viewModel = StateObject(
+            wrappedValue: OdinMainViewModel(dependencies: dependencies)
         )
-        _speechService = StateObject(
-            wrappedValue: dependencies.speechService
-        )
-        _mouthAnimationService = StateObject(
-            wrappedValue: dependencies.mouthAnimationService
-        )
-        _whisperService = StateObject(
-            wrappedValue: dependencies.whisperService
-        )
-        phonemeService = dependencies.phonemeService
-        brainService = dependencies.brainService
-        ollamaService = dependencies.ollamaService
     }
 
     var body: some View {
@@ -62,24 +28,20 @@ struct OdinMainView: View {
 
                 speechBubble
 
-                Image(
-                    speechService.isSpeaking
-                    ? mouthAnimationService.currentImageName
-                    : idleAnimationService.idleImageName
-                )
-                .resizable()
-                .interpolation(.none)
-                .scaledToFit()
-                .frame(width: 300, height: 300)
-                .scaleEffect(isHoveringOdin ? 1.035 : 1.0)
-                .animation(.easeOut(duration: 0.18), value: isHoveringOdin)
-                .onHover { hovering in
-                    isHoveringOdin = hovering
-                }
-                .onTapGesture {
-                    petOdin()
-                }
-                .help("Pet Odin")
+                Image(viewModel.currentDogImageName)
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+                    .frame(width: 300, height: 300)
+                    .scaleEffect(viewModel.isHoveringOdin ? 1.035 : 1.0)
+                    .animation(.easeOut(duration: 0.18), value: viewModel.isHoveringOdin)
+                    .onHover { hovering in
+                        viewModel.isHoveringOdin = hovering
+                    }
+                    .onTapGesture {
+                        viewModel.petOdin()
+                    }
+                    .help("Pet Odin")
 
                 Spacer(minLength: 0)
 
@@ -90,44 +52,9 @@ struct OdinMainView: View {
         }
         .frame(minWidth: 340, idealWidth: 380, maxWidth: .infinity)
         .frame(minHeight: 460, idealHeight: 520, maxHeight: .infinity)
-        .animation(.easeInOut(duration: 0.20), value: isNightMode)
+        .animation(.easeInOut(duration: 0.20), value: viewModel.isNightMode)
         .onAppear {
-            Task { @MainActor in
-                odinState = "Listening"
-                idleAnimationService.start()
-            }
-            loadAvailableModels()
-
-            speechService.onSpeechStarted = { spokenText in
-                Task { @MainActor in
-                    odinState = "Speaking"
-
-                    whisperService.stopListening()
-                    idleAnimationService.stop()
-
-                    let frames =
-                        phonemeService.frames(for: spokenText)
-
-                    mouthAnimationService.play(frames: frames)
-                }
-            }
-
-            speechService.onSpeechFinished = {
-                Task { @MainActor in
-                    odinState = "Listening"
-
-                    mouthAnimationService.stop()
-                    idleAnimationService.start()
-
-                    whisperService.startListening()
-                }
-            }
-
-            whisperService.onTranscript = { transcript in
-                handleCommand(transcript)
-            }
-
-            whisperService.startListening()
+            viewModel.start()
         }
     }
 
@@ -138,7 +65,7 @@ struct OdinMainView: View {
                     .fill(statusColor)
                     .frame(width: 8, height: 8)
 
-                Text("State: \(odinState)")
+                Text("State: \(viewModel.odinState.displayText)")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(theme.primaryText)
@@ -152,31 +79,31 @@ struct OdinMainView: View {
             Spacer()
 
             Button {
-                isNightMode.toggle()
+                viewModel.toggleNightMode()
             } label: {
-                Image(systemName: isNightMode ? "sun.max.fill" : "moon.fill")
+                Image(systemName: viewModel.isNightMode ? "sun.max.fill" : "moon.fill")
                     .foregroundStyle(theme.primaryText)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.borderless)
-            .help(isNightMode ? "Switch to day mode" : "Switch to night mode")
+            .help(viewModel.isNightMode ? "Switch to day mode" : "Switch to night mode")
 
             Button {
-                stopSpeaking()
+                viewModel.stopSpeaking()
             } label: {
                 Image(systemName: "speaker.slash.fill")
                     .foregroundStyle(theme.primaryText)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.borderless)
-            .disabled(!speechService.isSpeaking)
+            .disabled(!viewModel.speechService.isSpeaking)
             .help("Stop speaking")
         }
     }
 
     private var speechBubble: some View {
         ScrollView {
-            Text(bubbleText)
+            Text(viewModel.bubbleText)
                 .font(.system(size: 15, weight: .medium))
                 .lineSpacing(2)
                 .multilineTextAlignment(.center)
@@ -205,7 +132,7 @@ struct OdinMainView: View {
 
     private var commandBar: some View {
         VStack(spacing: 8) {
-            Text("State: \(odinState)")
+            Text("State: \(viewModel.odinState.displayText)")
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundStyle(theme.primaryText)
@@ -223,7 +150,7 @@ struct OdinMainView: View {
 
     private var commandControls: some View {
         HStack(spacing: 10) {
-            TextField("Ask Odin...", text: $typedCommand)
+            TextField("Ask Odin...", text: $viewModel.typedCommand)
                 .textFieldStyle(.plain)
                 .focused($isCommandFieldFocused)
                 .font(.system(size: 14))
@@ -233,12 +160,12 @@ struct OdinMainView: View {
                 .background(theme.controlBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .onSubmit {
-                    submitTypedCommand()
+                    viewModel.submitTypedCommand()
                 }
-                .disabled(odinState == "Thinking")
+                .disabled(viewModel.odinState.disablesCommands)
 
             Button {
-                submitTypedCommand()
+                viewModel.submitTypedCommand()
             } label: {
                 Text("Send")
                     .font(.system(size: 14, weight: .semibold))
@@ -248,11 +175,7 @@ struct OdinMainView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.borderless)
-            .disabled(
-                typedCommand
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .isEmpty || odinState == "Thinking"
-            )
+            .disabled(!viewModel.canSubmitTypedCommand)
             .help("Send")
         }
     }
@@ -263,14 +186,14 @@ struct OdinMainView: View {
                 .foregroundStyle(theme.primaryText)
                 .frame(width: 18, height: 18)
 
-            if availableModels.isEmpty {
-                Text(isLoadingModels ? "Loading Ollama models..." : "No Ollama models found")
+            if viewModel.availableModels.isEmpty {
+                Text(viewModel.isLoadingModels ? "Loading Ollama models..." : "No Ollama models found")
                     .font(.caption)
                     .foregroundStyle(theme.primaryText.opacity(0.72))
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Picker("Ollama model", selection: $selectedModelName) {
-                    ForEach(availableModels) { model in
+                Picker("Ollama model", selection: $viewModel.selectedModelName) {
+                    ForEach(viewModel.availableModels) { model in
                         Text(model.name)
                             .tag(model.name)
                     }
@@ -278,18 +201,18 @@ struct OdinMainView: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .disabled(odinState == "Thinking")
+                .disabled(viewModel.odinState.disablesCommands)
             }
 
             Button {
-                loadAvailableModels()
+                viewModel.loadAvailableModels()
             } label: {
                 Image(systemName: "arrow.clockwise")
                     .foregroundStyle(theme.primaryText)
                     .frame(width: 22, height: 22)
             }
             .buttonStyle(.borderless)
-            .disabled(isLoadingModels || odinState == "Thinking")
+            .disabled(viewModel.isLoadingModels || viewModel.odinState.disablesCommands)
             .help("Refresh Ollama models")
         }
         .padding(.horizontal, 10)
@@ -298,135 +221,17 @@ struct OdinMainView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var bubbleText: String {
-        let response = latestResponse
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if response.isEmpty {
-            return defaultBubbleText
-        }
-
-        return response
-    }
-
-    private var defaultBubbleText: String {
-        switch odinState {
-        case "Thinking":
-            return "Thinking..."
-        case "Speaking":
-            return latestResponse.isEmpty ? "Awoo." : latestResponse
-        case "Listening":
-            return "..."
-        default:
-            return "..."
-        }
-    }
-
     private var statusColor: Color {
-        switch odinState {
-        case "Thinking":
+        switch viewModel.odinState {
+        case .thinking:
             return Color(red: 0.88, green: 0.58, blue: 0.18)
-        case "Speaking":
+        case .speaking:
             return Color(red: 0.19, green: 0.55, blue: 0.88)
-        case "Listening":
+        case .listening:
             return Color(red: 0.26, green: 0.64, blue: 0.37)
-        default:
+        case .idle:
             return Color.gray
         }
-    }
-
-    private func stopSpeaking() {
-        speechService.stop()
-        mouthAnimationService.stop()
-        idleAnimationService.start()
-        odinState = "Listening"
-    }
-
-    private func petOdin() {
-        guard odinState != "Thinking" else {
-            return
-        }
-
-        withAnimation(.easeOut(duration: 0.18)) {
-            latestResponse = "Awoo."
-        }
-    }
-
-    private func submitTypedCommand() {
-        let command = typedCommand
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard !command.isEmpty else {
-            return
-        }
-
-        typedCommand = ""
-        handleCommand(command)
-    }
-
-    private func handleCommand(_ command: String) {
-        let modelName = selectedModelName
-
-        Task { @MainActor in
-            odinState = "Thinking"
-            latestResponse = "Thinking..."
-        }
-
-        currentBrainTask?.cancel()
-        currentBrainTask = Task {
-            let response = await brainService.respond(
-                to: command,
-                modelName: modelName,
-                onPartialResponse: { partialResponse in
-                    await MainActor.run {
-                        latestResponse = partialResponse
-                    }
-                }
-            )
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                latestResponse = response
-                speechService.speak(response)
-            }
-        }
-    }
-
-    private func loadAvailableModels() {
-        guard !isLoadingModels else {
-            return
-        }
-
-        isLoadingModels = true
-
-        Task {
-            do {
-                let models = try await ollamaService.availableModels()
-
-                await MainActor.run {
-                    availableModels = models
-                    selectedModelName = defaultModelName(from: models)
-                    isLoadingModels = false
-                }
-            } catch {
-                print("Ollama model list error:", error)
-
-                await MainActor.run {
-                    availableModels = []
-                    selectedModelName = OdinOllamaService.preferredModelName
-                    isLoadingModels = false
-                }
-            }
-        }
-    }
-
-    private func defaultModelName(
-        from models: [OdinOllamaService.OllamaModel]
-    ) -> String {
-        if models.contains(where: { $0.name == OdinOllamaService.preferredModelName }) {
-            return OdinOllamaService.preferredModelName
-        }
-
-        return models.first?.name ?? OdinOllamaService.preferredModelName
     }
 }
 
@@ -469,9 +274,6 @@ private struct SpeechBubbleShape: Shape {
 }
 
 private struct OdinTheme {
-    private static let dayStartHour = 7
-    private static let nightStartHour = 19
-
     let windowBackground: Color
     let bubbleBackground: Color
     let commandBarBackground: Color
@@ -480,12 +282,6 @@ private struct OdinTheme {
     let primaryText: Color
     let scrollRail: Color
     let shadow: Color
-
-    static var defaultIsNightMode: Bool {
-        let hour = Calendar.current.component(.hour, from: Date())
-
-        return hour < dayStartHour || hour >= nightStartHour
-    }
 
     static let day = OdinTheme(
         windowBackground: Color(red: 0.95, green: 0.94, blue: 0.91),

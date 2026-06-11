@@ -1,21 +1,23 @@
 import Foundation
 
 final class OdinOllamaService {
-    nonisolated static let preferredModelName = "gemma4:31b-it-qat"
-    nonisolated static let defaultContextWindow = 16_384
+    nonisolated static let preferredModelName =
+        OdinOllamaConfiguration.live.preferredModelName
+    nonisolated static let defaultContextWindow =
+        OdinOllamaConfiguration.live.defaultContextWindow
 
-    private let session: URLSession
+    private let configuration: OdinOllamaConfiguration
+    private let httpClient: any OdinHTTPClient
 
-    init(session: URLSession = OdinOllamaService.makeSession()) {
-        self.session = session
-    }
-
-    private static func makeSession() -> URLSession {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 600
-        configuration.timeoutIntervalForResource = 1_800
-
-        return URLSession(configuration: configuration)
+    init(
+        configuration: OdinOllamaConfiguration = .live,
+        httpClient: (any OdinHTTPClient)? = nil
+    ) {
+        self.configuration = configuration
+        self.httpClient = httpClient ?? URLSessionOdinHTTPClient(
+            requestTimeout: configuration.requestTimeout,
+            resourceTimeout: configuration.resourceTimeout
+        )
     }
 
     private struct GenerateRequest: Encodable {
@@ -60,11 +62,9 @@ final class OdinOllamaService {
         modelName: String = OdinOllamaService.preferredModelName
     ) async throws -> String {
 
-        guard let url = URL(
-            string: "http://127.0.0.1:11434/api/generate"
-        ) else {
-            throw URLError(.badURL)
-        }
+        let url = configuration.baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("generate")
 
         let requestBody = GenerateRequest(
             model: modelName,
@@ -72,7 +72,7 @@ final class OdinOllamaService {
             stream: false,
             think: false,
             options: GenerateOptions(
-                numCtx: Self.defaultContextWindow
+                numCtx: configuration.defaultContextWindow
             )
         )
         let jsonData = try JSONEncoder().encode(requestBody)
@@ -85,13 +85,7 @@ final class OdinOllamaService {
         )
         request.httpBody = jsonData
 
-        let (data, response) = try await session.data(
-            for: request
-        )
-        guard let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+        let (data, _) = try await httpClient.data(for: request)
 
         let decoded = try JSONDecoder().decode(GenerateResponse.self, from: data)
         return decoded.response.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -103,11 +97,9 @@ final class OdinOllamaService {
         onPartialResponse: @escaping (String) async -> Void
     ) async throws -> String {
 
-        guard let url = URL(
-            string: "http://127.0.0.1:11434/api/generate"
-        ) else {
-            throw URLError(.badURL)
-        }
+        let url = configuration.baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("generate")
 
         let requestBody = GenerateRequest(
             model: modelName,
@@ -115,7 +107,7 @@ final class OdinOllamaService {
             stream: true,
             think: false,
             options: GenerateOptions(
-                numCtx: Self.defaultContextWindow
+                numCtx: configuration.defaultContextWindow
             )
         )
         let jsonData = try JSONEncoder().encode(requestBody)
@@ -128,13 +120,7 @@ final class OdinOllamaService {
         )
         request.httpBody = jsonData
 
-        let (bytes, response) = try await session.bytes(
-            for: request
-        )
-        guard let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+        let (bytes, _) = try await httpClient.bytes(for: request)
 
         var fullResponse = ""
 
@@ -163,17 +149,12 @@ final class OdinOllamaService {
     }
 
     func availableModels() async throws -> [OllamaModel] {
-        guard let url = URL(
-            string: "http://127.0.0.1:11434/api/tags"
-        ) else {
-            throw URLError(.badURL)
-        }
+        let url = configuration.baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("tags")
 
-        let (data, response) = try await session.data(from: url)
-        guard let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+        let request = URLRequest(url: url)
+        let (data, _) = try await httpClient.data(for: request)
 
         return try JSONDecoder().decode(ModelsResponse.self, from: data).models
     }
